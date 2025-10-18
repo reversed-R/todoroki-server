@@ -1,0 +1,9 @@
+[package]
+name = "todoroki-use-case"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+todoroki-domain = { path = "../todoroki-domain"}
+
+thiserror.workspace = true

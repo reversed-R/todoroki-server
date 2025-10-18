@@ -1,0 +1,12 @@
+[package]
+name = "todoroki-infrastructure"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+todoroki-domain = { path = "../todoroki-domain"}
+sqlx.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+thiserror.workspace = true
+uuid.workspace = true

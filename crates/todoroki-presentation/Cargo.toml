@@ -1,0 +1,16 @@
+[package]
+name = "todoroki-presentation"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+todoroki-domain = { path = "../todoroki-domain"}
+todoroki-use-case = { path = "../todoroki-use-case"}
+todoroki-infrastructure = { path = "../todoroki-infrastructure"}
+tokio.workspace = true
+axum.workspace = true
+dotenvy.workspace = true
+uuid.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+utoipa.workspace = true

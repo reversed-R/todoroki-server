@@ -21,7 +21,7 @@ impl TryInto<entities::todo::Todo> for Todo {
     type Error = ErrorCode;
 
     fn try_into(self) -> Result<entities::todo::Todo, Self::Error> {
-        Ok(entities::todo::Todo::new(
+        Ok(entities::todo::Todo::generate(
             TodoName::new(self.name),
             TodoDescription::new(self.description),
             self.started_at.map(|t| DateTime::try_from(t)).transpose()?,

@@ -1,15 +1,25 @@
 use crate::shared::postgresql::Postgresql;
 
+use futures_util::{StreamExt, TryStreamExt};
+use sqlx::{prelude::FromRow, types::chrono};
 use todoroki_domain::{
-    entities::todo::{Todo, TodoId, TodoUpdateCommand},
+    entities::todo::{Todo, TodoDescription, TodoId, TodoName, TodoUpdateCommand},
     repositories::todo::{TodoRepository, TodoRepositoryError},
+    value_objects::datetime::DateTime,
 };
 use uuid::Uuid;
 
-#[derive(sqlx::FromRow)]
+#[derive(FromRow)]
 struct TodoRow {
     id: Uuid,
     name: String,
+    description: String,
+    started_at: Option<chrono::DateTime<chrono::Utc>>,
+    scheduled_at: Option<chrono::DateTime<chrono::Utc>>,
+    ended_at: Option<chrono::DateTime<chrono::Utc>>,
+    created_at: chrono::DateTime<chrono::Utc>,
+    updated_at: chrono::DateTime<chrono::Utc>,
+    deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 struct TodoIdColumn {
@@ -18,7 +28,17 @@ struct TodoIdColumn {
 
 impl From<TodoRow> for Todo {
     fn from(value: TodoRow) -> Self {
-        todo!()
+        Self::new(
+            TodoId::new(value.id),
+            TodoName::new(value.name),
+            TodoDescription::new(value.description),
+            value.started_at.map(DateTime::new),
+            value.scheduled_at.map(DateTime::new),
+            value.ended_at.map(DateTime::new),
+            DateTime::new(value.created_at),
+            DateTime::new(value.updated_at),
+            value.deleted_at.map(DateTime::new),
+        )
     }
 }
 
@@ -65,7 +85,27 @@ impl TodoRepository for PgTodoRepository {
     }
 
     async fn list(&self) -> Result<Vec<Todo>, TodoRepositoryError> {
-        todo!()
+        let res = sqlx::query_as!(
+            TodoRow,
+            r#"SELECT
+            todos.id AS "id",
+            todos.name AS "name",
+            todos.description AS "description",
+            todos.started_at AS "started_at?",
+            todos.scheduled_at AS "scheduled_at?",
+            todos.ended_at AS "ended_at?",
+            todos.created_at AS "created_at",
+            todos.updated_at AS "updated_at",
+            todos.deleted_at AS "deleted_at?"
+            FROM todos
+            ORDER BY todos.updated_at DESC"#
+        )
+        .fetch(&*self.db)
+        .map(|row| Ok(Todo::from(row?)))
+        .try_collect()
+        .await;
+
+        res.map_err(|e: sqlx::Error| TodoRepositoryError::InternalError(e.to_string()))
     }
 
     async fn delete_by_id(&self, id: TodoId) -> Result<(), TodoRepositoryError> {

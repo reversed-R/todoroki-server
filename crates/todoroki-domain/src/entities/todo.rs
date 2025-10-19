@@ -36,6 +36,30 @@ impl TodoId {
 
 impl Todo {
     pub fn new(
+        id: TodoId,
+        name: TodoName,
+        description: TodoDescription,
+        started_at: Option<DateTime>,
+        scheduled_at: Option<DateTime>,
+        ended_at: Option<DateTime>,
+        created_at: DateTime,
+        updated_at: DateTime,
+        deleted_at: Option<DateTime>,
+    ) -> Self {
+        Self {
+            id,
+            name,
+            description,
+            started_at,
+            scheduled_at,
+            ended_at,
+            created_at,
+            updated_at,
+            deleted_at,
+        }
+    }
+
+    pub fn generate(
         name: TodoName,
         description: TodoDescription,
         started_at: Option<DateTime>,

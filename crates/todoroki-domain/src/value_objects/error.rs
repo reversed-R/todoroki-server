@@ -11,6 +11,7 @@ pub enum ErrorCode {
     PermissionDenied,
     #[error(transparent)]
     TodoRepositoryInternalError(#[from] TodoRepositoryError),
+    InvalidDateTimeFormat(String),
 }
 
 impl Display for ErrorCode {
@@ -21,6 +22,7 @@ impl Display for ErrorCode {
             Self::TodoRepositoryInternalError(e) => {
                 write!(f, "todo/repository-internal-error; error={e}")
             }
+            Self::InvalidDateTimeFormat(s) => write!(f, "datetime/invalid-format; string={s}"),
         }
     }
 }

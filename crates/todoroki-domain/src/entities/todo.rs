@@ -28,7 +28,33 @@ value_object!(TodoId(Uuid));
 value_object!(TodoName(String));
 value_object!(TodoDescription(String));
 
+impl TodoId {
+    pub(crate) fn generate() -> Self {
+        Self(Uuid::new_v4())
+    }
+}
+
 impl Todo {
+    pub fn new(
+        name: TodoName,
+        description: TodoDescription,
+        started_at: Option<DateTime>,
+        scheduled_at: Option<DateTime>,
+        ended_at: Option<DateTime>,
+    ) -> Self {
+        Self {
+            id: TodoId::generate(),
+            name,
+            description,
+            started_at,
+            scheduled_at,
+            ended_at,
+            created_at: DateTime::now(),
+            updated_at: DateTime::now(),
+            deleted_at: None,
+        }
+    }
+
     pub fn is_alive(&self) -> bool {
         self.deleted_at.is_none() && self.ended_at.is_none()
     }

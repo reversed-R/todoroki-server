@@ -1,5 +1,11 @@
 use serde::Deserialize;
-use todoroki_domain::{entities, value_objects::error::ErrorCode};
+use todoroki_domain::{
+    entities::{
+        self,
+        todo::{TodoDescription, TodoName},
+    },
+    value_objects::{datetime::DateTime, error::ErrorCode},
+};
 use utoipa::ToSchema;
 
 #[derive(Debug, Clone, Deserialize, ToSchema)]
@@ -15,6 +21,14 @@ impl TryInto<entities::todo::Todo> for Todo {
     type Error = ErrorCode;
 
     fn try_into(self) -> Result<entities::todo::Todo, Self::Error> {
-        todo!()
+        Ok(entities::todo::Todo::new(
+            TodoName::new(self.name),
+            TodoDescription::new(self.description),
+            self.started_at.map(|t| DateTime::try_from(t)).transpose()?,
+            self.scheduled_at
+                .map(|t| DateTime::try_from(t))
+                .transpose()?,
+            self.ended_at.map(|t| DateTime::try_from(t)).transpose()?,
+        ))
     }
 }

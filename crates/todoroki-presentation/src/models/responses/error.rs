@@ -22,6 +22,8 @@ enum ErrorResponseCode {
     PermissionDenied,
     #[serde(rename = "todo/repository-internal-error")]
     TodoRepositoryInternalError,
+    #[serde(rename = "datetime/invalid-format")]
+    InvalidDateTimeFormat,
 }
 
 impl From<ErrorCode> for ErrorResponse {
@@ -39,6 +41,7 @@ impl IntoResponse for ErrorResponse {
             ErrorResponseCode::TodoNotFound => StatusCode::NOT_FOUND,
             ErrorResponseCode::PermissionDenied => StatusCode::FORBIDDEN,
             ErrorResponseCode::TodoRepositoryInternalError => StatusCode::INTERNAL_SERVER_ERROR,
+            ErrorResponseCode::InvalidDateTimeFormat => StatusCode::BAD_REQUEST,
         };
 
         (status_code, Json(self)).into_response()
@@ -51,6 +54,7 @@ impl From<&ErrorCode> for ErrorResponseCode {
             ErrorCode::TodoNotFound(_) => Self::TodoNotFound,
             ErrorCode::PermissionDenied => Self::PermissionDenied,
             ErrorCode::TodoRepositoryInternalError(_) => Self::TodoRepositoryInternalError,
+            ErrorCode::InvalidDateTimeFormat(_) => Self::InvalidDateTimeFormat,
         }
     }
 }

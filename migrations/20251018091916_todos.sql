@@ -2,6 +2,8 @@ CREATE TABLE todos (
   id UUID PRIMARY KEY NOT NULL,
   name TEXT NOT NULL,
   description TEXT NOT NULL,
+  is_public BOOLEAN NOT NULL,
+  alternative_name TEXT DEFAULT NULL,
   started_at TIMESTAMPTZ DEFAULT NULL,
   scheduled_at TIMESTAMPTZ DEFAULT NULL,
   ended_at TIMESTAMPTZ DEFAULT NULL,

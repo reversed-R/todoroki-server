@@ -3,7 +3,7 @@ use crate::shared::postgresql::Postgresql;
 use futures_util::{StreamExt, TryStreamExt};
 use sqlx::{prelude::FromRow, types::chrono};
 use todoroki_domain::{
-    entities::todo::{Todo, TodoDescription, TodoId, TodoName, TodoUpdateCommand},
+    entities::todo::{Todo, TodoDescription, TodoId, TodoName, TodoPublishment, TodoUpdateCommand},
     repositories::todo::{TodoRepository, TodoRepositoryError},
     value_objects::datetime::DateTime,
 };
@@ -14,6 +14,8 @@ struct TodoRow {
     id: Uuid,
     name: String,
     description: String,
+    is_public: bool,
+    alternative_name: Option<String>,
     started_at: Option<chrono::DateTime<chrono::Utc>>,
     scheduled_at: Option<chrono::DateTime<chrono::Utc>>,
     ended_at: Option<chrono::DateTime<chrono::Utc>>,
@@ -32,6 +34,11 @@ impl From<TodoRow> for Todo {
             TodoId::new(value.id),
             TodoName::new(value.name),
             TodoDescription::new(value.description),
+            if value.is_public {
+                TodoPublishment::Public
+            } else {
+                TodoPublishment::Private(value.alternative_name)
+            },
             value.started_at.map(DateTime::new),
             value.scheduled_at.map(DateTime::new),
             value.ended_at.map(DateTime::new),
@@ -57,13 +64,18 @@ impl TodoRepository for PgTodoRepository {
         let res = sqlx::query_as!(
             TodoIdColumn,
             r#"
-           INSERT INTO todos (id, name, description, started_at, scheduled_at, ended_at)
-           VALUES ($1, $2, $3, $4, $5, $6)
+           INSERT INTO todos (id, name, description, is_public, alternative_name, started_at, scheduled_at, ended_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
            RETURNING id
             "#,
             todo.id().clone().value(),
             todo.name().clone().value(),
             todo.description().clone().value(),
+            matches!(todo.is_public(), TodoPublishment::Public),
+            match todo.is_public() {
+                TodoPublishment::Public => None,
+                TodoPublishment::Private(alt) => alt.clone()
+            },
             todo.started_at().clone().map(|t| t.value()),
             todo.scheduled_at().clone().map(|t| t.value()),
             todo.ended_at().clone().map(|t| t.value()),
@@ -91,6 +103,8 @@ impl TodoRepository for PgTodoRepository {
             todos.id AS "id",
             todos.name AS "name",
             todos.description AS "description",
+            todos.is_public AS "is_public",
+            todos.alternative_name AS "alternative_name",
             todos.started_at AS "started_at?",
             todos.scheduled_at AS "scheduled_at?",
             todos.ended_at AS "ended_at?",

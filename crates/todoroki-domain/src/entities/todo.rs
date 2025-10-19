@@ -11,6 +11,8 @@ pub struct Todo {
     #[getset(get = "pub")]
     description: TodoDescription,
     #[getset(get = "pub")]
+    is_public: TodoPublishment,
+    #[getset(get = "pub")]
     started_at: Option<DateTime>,
     #[getset(get = "pub")]
     scheduled_at: Option<DateTime>,
@@ -34,11 +36,18 @@ impl TodoId {
     }
 }
 
+#[derive(Debug, Clone)]
+pub enum TodoPublishment {
+    Public,
+    Private(Option<String>), // alternative name
+}
+
 impl Todo {
     pub fn new(
         id: TodoId,
         name: TodoName,
         description: TodoDescription,
+        is_public: TodoPublishment,
         started_at: Option<DateTime>,
         scheduled_at: Option<DateTime>,
         ended_at: Option<DateTime>,
@@ -50,6 +59,7 @@ impl Todo {
             id,
             name,
             description,
+            is_public,
             started_at,
             scheduled_at,
             ended_at,
@@ -62,6 +72,7 @@ impl Todo {
     pub fn generate(
         name: TodoName,
         description: TodoDescription,
+        is_public: TodoPublishment,
         started_at: Option<DateTime>,
         scheduled_at: Option<DateTime>,
         ended_at: Option<DateTime>,
@@ -70,6 +81,7 @@ impl Todo {
             id: TodoId::generate(),
             name,
             description,
+            is_public,
             started_at,
             scheduled_at,
             ended_at,
@@ -93,6 +105,8 @@ pub struct TodoUpdateCommand {
     name: Option<TodoName>,
     #[getset(get = "pub")]
     description: Option<TodoDescription>,
+    #[getset(get = "pub")]
+    is_public: Option<TodoPublishment>,
     #[getset(get = "pub")]
     starts_at: Option<Option<DateTime>>,
     #[getset(get = "pub")]

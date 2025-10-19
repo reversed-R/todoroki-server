@@ -1,9 +1,12 @@
 use crate::shared::postgresql::Postgresql;
 
-use futures_util::{StreamExt, TryStreamExt};
-use sqlx::{prelude::FromRow, types::chrono};
+use futures_util::{StreamExt, TryFutureExt, TryStreamExt};
+use sqlx::{prelude::FromRow, types::chrono, QueryBuilder};
 use todoroki_domain::{
-    entities::todo::{Todo, TodoDescription, TodoId, TodoName, TodoPublishment, TodoUpdateCommand},
+    entities::todo::{
+        Todo, TodoDescription, TodoId, TodoName, TodoPublishment, TodoUpdateCommand,
+        TodoUpdateProgressStatus,
+    },
     repositories::todo::{TodoRepository, TodoRepositoryError},
     value_objects::datetime::DateTime,
 };
@@ -93,7 +96,51 @@ impl TodoRepository for PgTodoRepository {
     }
 
     async fn update(&self, cmd: TodoUpdateCommand) -> Result<(), TodoRepositoryError> {
-        todo!()
+        let mut builder = QueryBuilder::new("UPDATE todos SET ");
+
+        let mut sep = builder.separated(", ");
+
+        if let Some(name) = cmd.name() {
+            sep.push("name = ");
+            sep.push_bind(name.clone().value());
+        }
+
+        if let Some(description) = cmd.description() {
+            sep.push("description = ");
+            sep.push_bind(description.clone().value());
+        }
+
+        if let Some(scheduled_at) = cmd.scheduled_at() {
+            sep.push("scheduled_at = ");
+            sep.push_bind(scheduled_at.clone().map(|t| t.value()));
+        }
+
+        // すでに開始済みまたは終了済みの際は列の更新をしない
+        if let Some(status) = cmd.status() {
+            match status {
+                TodoUpdateProgressStatus::OnProgress => {
+                    sep.push("started_at = CASE WHEN started_at IS NULL THEN ");
+                    sep.push_bind(chrono::Utc::now());
+                    sep.push(" ELSE started_at END");
+                }
+                TodoUpdateProgressStatus::Completed => {
+                    sep.push("ended_at = CASE WHEN ended_at IS NULL THEN ");
+                    sep.push_bind(chrono::Utc::now());
+                    sep.push(" ELSE ended_at END");
+                }
+            }
+        }
+
+        builder.push(" WHERE id = ");
+        builder.push_bind(cmd.id().clone().value());
+
+        builder
+            .build()
+            .execute(&*self.db)
+            .await
+            .map_err(|e| TodoRepositoryError::InternalError(e.to_string()))?;
+
+        Ok(())
     }
 
     async fn list(&self) -> Result<Vec<Todo>, TodoRepositoryError> {

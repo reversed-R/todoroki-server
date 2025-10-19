@@ -1,5 +1,10 @@
-use axum::{extract::State, response::IntoResponse, Json};
+use axum::{
+    extract::{Path, State},
+    response::IntoResponse,
+    Json,
+};
 use std::sync::Arc;
+use todoroki_domain::entities::todo::TodoId;
 
 use crate::{
     models::{
@@ -65,6 +70,35 @@ pub async fn handle_post(
             "todo/created; id={}",
             id.value().as_hyphenated()
         ))),
+        Err(e) => Err(e.into()),
+    }
+}
+
+#[utoipa::path(
+    patch,
+    path = "/todos/{todo_id}",
+    operation_id = "patchTodoById",
+    tag = "todo",
+    responses(
+        (status = 201, description = "Updated", body = SuccessResponse),
+        (status = 400, description = "Bad Request", body = ErrorResponse),
+        (status = 422, description = "Unprocessable Entity", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
+    ),
+    security(()),
+)]
+pub async fn handle_patch(
+    Path(raw_id): Path<String>,
+    State(modules): State<Arc<Modules<DefaultRepositories>>>,
+    Json(raw_cmd): Json<requests::todo::TodoUpdateCommand>,
+) -> Result<impl IntoResponse, ErrorResponse> {
+    let id = TodoId::try_from(raw_id)?;
+    let cmd = raw_cmd.try_into_with_id(id)?;
+
+    let res = modules.todo_use_case().update(cmd).await;
+
+    match res {
+        Ok(id) => Ok(SuccessResponse::new(format!("todo/updated",))),
         Err(e) => Err(e.into()),
     }
 }

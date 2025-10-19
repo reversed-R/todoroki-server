@@ -1,4 +1,7 @@
-use crate::{value_object, value_objects::datetime::DateTime};
+use crate::{
+    value_object,
+    value_objects::{datetime::DateTime, error::ErrorCode},
+};
 use getset::Getters;
 use uuid::Uuid;
 
@@ -33,6 +36,16 @@ value_object!(TodoDescription(String));
 impl TodoId {
     pub(crate) fn generate() -> Self {
         Self(Uuid::new_v4())
+    }
+}
+
+impl TryFrom<String> for TodoId {
+    type Error = ErrorCode;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Ok(Self(
+            Uuid::parse_str(&value).map_err(|_| ErrorCode::InvalidUuidFormat(value))?,
+        ))
     }
 }
 
@@ -73,18 +86,16 @@ impl Todo {
         name: TodoName,
         description: TodoDescription,
         is_public: TodoPublishment,
-        started_at: Option<DateTime>,
         scheduled_at: Option<DateTime>,
-        ended_at: Option<DateTime>,
     ) -> Self {
         Self {
             id: TodoId::generate(),
             name,
             description,
             is_public,
-            started_at,
+            started_at: None,
             scheduled_at,
-            ended_at,
+            ended_at: None,
             created_at: DateTime::now(),
             updated_at: DateTime::now(),
             deleted_at: None,
@@ -108,9 +119,33 @@ pub struct TodoUpdateCommand {
     #[getset(get = "pub")]
     is_public: Option<TodoPublishment>,
     #[getset(get = "pub")]
-    starts_at: Option<Option<DateTime>>,
-    #[getset(get = "pub")]
     scheduled_at: Option<Option<DateTime>>,
     #[getset(get = "pub")]
-    ends_at: Option<Option<DateTime>>,
+    status: Option<TodoUpdateProgressStatus>,
+}
+
+#[derive(Debug, Clone)]
+pub enum TodoUpdateProgressStatus {
+    OnProgress,
+    Completed,
+}
+
+impl TodoUpdateCommand {
+    pub fn new(
+        id: TodoId,
+        name: Option<TodoName>,
+        description: Option<TodoDescription>,
+        is_public: Option<TodoPublishment>,
+        scheduled_at: Option<Option<DateTime>>,
+        status: Option<TodoUpdateProgressStatus>,
+    ) -> Self {
+        Self {
+            id,
+            name,
+            description,
+            is_public,
+            scheduled_at,
+            status,
+        }
+    }
 }

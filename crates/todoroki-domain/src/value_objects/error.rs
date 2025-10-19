@@ -12,6 +12,7 @@ pub enum ErrorCode {
     #[error(transparent)]
     TodoRepositoryInternalError(#[from] TodoRepositoryError),
     InvalidDateTimeFormat(String),
+    InvalidUuidFormat(String),
 }
 
 impl Display for ErrorCode {
@@ -23,6 +24,7 @@ impl Display for ErrorCode {
                 write!(f, "todo/repository-internal-error; error={e}")
             }
             Self::InvalidDateTimeFormat(s) => write!(f, "datetime/invalid-format; string={s}"),
+            Self::InvalidUuidFormat(s) => write!(f, "uuid/invalid-format; string={s}"),
         }
     }
 }

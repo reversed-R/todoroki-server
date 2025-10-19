@@ -13,7 +13,7 @@ pub fn router(modules: Arc<Modules<DefaultRepositories>>) -> Router {
         .route("/health", get(health::handle_health))
         .route("/todos", post(todo::handle_post))
         .route("/todos", get(todo::handle_get))
-        // .route("/todos/{todo_id}", patch(todo::handle_patch))
+        .route("/todos/{todo_id}", patch(todo::handle_patch))
         .with_state(modules)
 }
 

@@ -8,7 +8,7 @@ services:
       - -c
       - |
         cargo sqlx migrate run
-        cargo run todoroki-presentation
+        cargo watch -x "run --package todoroki-presentation"
     ports:
       - 8080:8080
     volumes:
@@ -19,6 +19,13 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          ignore:
+            - ./target
 
   postgres:
     image: postgres:17-bullseye

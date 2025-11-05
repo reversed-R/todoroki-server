@@ -1,4 +1,6 @@
 pub mod todo;
+pub mod user;
+pub mod user_auth;
 
 #[macro_export]
 macro_rules! value_object {

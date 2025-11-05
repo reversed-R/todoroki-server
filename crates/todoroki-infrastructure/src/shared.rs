@@ -1,6 +1,6 @@
 pub mod postgresql;
 
-use crate::{shared::postgresql::Postgresql, todo::PgTodoRepository};
+use crate::{shared::postgresql::Postgresql, todo::PgTodoRepository, user::PgUserRepository};
 use postgresql::PostgresqlError;
 use todoroki_domain::repositories::Repositories;
 
@@ -14,6 +14,7 @@ pub enum DefaultRepositoriesError {
 
 pub struct DefaultRepositories {
     pg_todo_repository: PgTodoRepository,
+    pg_user_repository: PgUserRepository,
 }
 
 impl DefaultRepositories {
@@ -22,14 +23,20 @@ impl DefaultRepositories {
 
         Ok(Self {
             pg_todo_repository: PgTodoRepository::new(postgresql),
+            pg_user_repository: PgUserRepository::new(postgresql),
         })
     }
 }
 
 impl Repositories for DefaultRepositories {
     type TodoRepositoryImpl = PgTodoRepository;
+    type UserRepositoryImpl = PgUserRepository;
 
     fn todo_repository(&self) -> &Self::TodoRepositoryImpl {
         &self.pg_todo_repository
+    }
+
+    fn user_repository(&self) -> &Self::UserRepositoryImpl {
+        &self.pg_user_repository
     }
 }

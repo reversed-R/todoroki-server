@@ -3,7 +3,10 @@ use std::fmt::Display;
 // use getset::Getters;
 use thiserror::Error;
 
-use crate::{entities::todo::TodoId, repositories::todo::TodoRepositoryError};
+use crate::{
+    entities::todo::TodoId,
+    repositories::{todo::TodoRepositoryError, user::UserRepositoryError},
+};
 
 #[derive(Debug, Clone, Error)]
 pub enum ErrorCode {
@@ -11,6 +14,8 @@ pub enum ErrorCode {
     PermissionDenied,
     #[error(transparent)]
     TodoRepositoryInternalError(#[from] TodoRepositoryError),
+    #[error(transparent)]
+    UserRepositoryInternalError(#[from] UserRepositoryError),
     InvalidDateTimeFormat(String),
     InvalidUuidFormat(String),
 }

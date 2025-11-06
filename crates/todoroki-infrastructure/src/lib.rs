@@ -1,6 +1,7 @@
 pub mod shared;
 pub mod todo;
 pub mod user;
+pub mod user_auth;
 
 pub fn add(left: u64, right: u64) -> u64 {
     left + right

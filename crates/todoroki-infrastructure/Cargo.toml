@@ -11,3 +11,5 @@ tracing-subscriber.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
 futures-util.workspace = true
+jsonwebtoken.workspace = true
+reqwest.workspace = true

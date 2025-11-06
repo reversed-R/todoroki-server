@@ -1,16 +1,17 @@
 use crate::value_object;
-use getset::Getters;
 
-#[derive(Debug, Clone, Getters)]
+value_object!(UserAuthToken(String));
+
 pub struct VerificationKey {
-    #[getset(get = "pub")]
-    key: UserAuthKey,
+    key: jsonwebtoken::DecodingKey,
 }
 
-value_object!(UserAuthKey(jsonwebtoken::DecodingKey));
-
 impl VerificationKey {
-    pub fn new(key: UserAuthKey) -> Self {
+    pub fn new(key: jsonwebtoken::DecodingKey) -> Self {
         Self { key }
+    }
+
+    pub fn value(&self) -> &jsonwebtoken::DecodingKey {
+        &self.key
     }
 }

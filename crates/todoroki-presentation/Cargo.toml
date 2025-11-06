@@ -14,3 +14,4 @@ uuid.workspace = true
 thiserror.workspace = true
 serde.workspace = true
 utoipa.workspace = true
+jsonwebtoken.workspace = true

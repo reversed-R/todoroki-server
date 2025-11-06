@@ -8,3 +8,4 @@ getset.workspace = true
 uuid.workspace = true
 chrono.workspace = true
 thiserror.workspace = true
+jsonwebtoken.workspace = true

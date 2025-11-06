@@ -1,6 +1,9 @@
 pub mod postgresql;
 
-use crate::{shared::postgresql::Postgresql, todo::PgTodoRepository, user::PgUserRepository};
+use crate::{
+    shared::postgresql::Postgresql, todo::PgTodoRepository, user::PgUserRepository,
+    user_auth::FirebaseUserAuthRepository,
+};
 use postgresql::PostgresqlError;
 use todoroki_domain::repositories::Repositories;
 
@@ -13,17 +16,19 @@ pub enum DefaultRepositoriesError {
 }
 
 pub struct DefaultRepositories {
-    pg_todo_repository: PgTodoRepository,
-    pg_user_repository: PgUserRepository,
+    todo_repository: PgTodoRepository,
+    user_repository: PgUserRepository,
+    user_auth_repository: FirebaseUserAuthRepository,
 }
 
 impl DefaultRepositories {
-    pub async fn new(postgres_url: &str) -> Result<Self, DefaultRepositoriesError> {
+    pub async fn new(postgres_url: &str, jwk_url: &str) -> Result<Self, DefaultRepositoriesError> {
         let postgresql = Postgresql::new(postgres_url).await?;
 
         Ok(Self {
-            pg_todo_repository: PgTodoRepository::new(postgresql),
-            pg_user_repository: PgUserRepository::new(postgresql),
+            todo_repository: PgTodoRepository::new(postgresql),
+            user_repository: PgUserRepository::new(postgresql),
+            user_auth_repository: FirebaseUserAuthRepository::new(jwk_url.clone()),
         })
     }
 }
@@ -31,12 +36,17 @@ impl DefaultRepositories {
 impl Repositories for DefaultRepositories {
     type TodoRepositoryImpl = PgTodoRepository;
     type UserRepositoryImpl = PgUserRepository;
+    type UserAuthRepositoryImpl = FirebaseUserAuthRepository;
 
     fn todo_repository(&self) -> &Self::TodoRepositoryImpl {
-        &self.pg_todo_repository
+        &self.todo_repository
     }
 
     fn user_repository(&self) -> &Self::UserRepositoryImpl {
-        &self.pg_user_repository
+        &self.user_repository
+    }
+
+    fn user_auth_repository(&self) -> &Self::UserAuthRepositoryImpl {
+        &self.user_auth_repository
     }
 }

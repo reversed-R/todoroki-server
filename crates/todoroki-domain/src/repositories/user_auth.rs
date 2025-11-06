@@ -9,6 +9,6 @@ pub enum UserAuthRepositoryError {
 }
 
 #[allow(async_fn_in_trait)]
-pub trait UserRepository: Send + Sync + 'static {
+pub trait UserAuthRepository: Send + Sync + 'static {
     async fn get_key_by_id(&self, id: String) -> Result<VerificationKey, UserAuthRepositoryError>;
 }

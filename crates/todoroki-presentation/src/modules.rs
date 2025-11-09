@@ -43,13 +43,17 @@ const JWK_URL: &str =
     "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com";
 
 pub async fn default(config: Config) -> Result<Modules<DefaultRepositories>, DefaultModulesError> {
-    let default_repositories = DefaultRepositories::new(config.postgres_url(), JWK_URL).await?;
+    let default_repositories =
+        DefaultRepositories::new(config.clone().postgres_url(), JWK_URL).await?;
     let repositories = Arc::new(default_repositories);
 
     Ok(Modules {
-        config,
+        config: config.clone(),
         repositories: Arc::clone(&repositories),
         todo_use_case: TodoUseCase::new(Arc::clone(&repositories)),
-        user_use_case: UserUseCase::new(Arc::clone(&repositories)),
+        user_use_case: UserUseCase::new(
+            Arc::clone(&repositories),
+            config.firebase_project_id().to_string(),
+        ),
     })
 }

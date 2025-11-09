@@ -18,6 +18,7 @@ pub enum ErrorCode {
     UserRepositoryInternalError(#[from] UserRepositoryError),
     InvalidDateTimeFormat(String),
     InvalidUuidFormat(String),
+    UserAuthTokenVerificationError(String),
 }
 
 impl Display for ErrorCode {
@@ -30,6 +31,12 @@ impl Display for ErrorCode {
             }
             Self::InvalidDateTimeFormat(s) => write!(f, "datetime/invalid-format; string={s}"),
             Self::InvalidUuidFormat(s) => write!(f, "uuid/invalid-format; string={s}"),
+            Self::UserRepositoryInternalError(e) => {
+                write!(f, "user/repository-internal-error; error={e}")
+            }
+            Self::UserAuthTokenVerificationError(s) => {
+                write!(f, "user-auth/token-verification-failed; error={s}")
+            }
         }
     }
 }

@@ -1,7 +1,7 @@
 use crate::shared::postgresql::Postgresql;
 
-use futures_util::{StreamExt, TryFutureExt, TryStreamExt};
-use sqlx::{prelude::FromRow, types::chrono, QueryBuilder};
+use futures_util::{TryFutureExt, TryStreamExt};
+use sqlx::{prelude::FromRow, types::chrono};
 use todoroki_domain::{
     entities::user::{User, UserEmail, UserId, UserName},
     repositories::user::{UserRepository, UserRepositoryError},
@@ -77,12 +77,16 @@ impl UserRepository for PgUserRepository {
             users.id AS "id",
             users.name AS "name",
             users.email AS "email",
+            users.created_at AS "created_at",
+            users.updated_at AS "updated_at",
+            users.deleted_at AS "deleted_at?"
             FROM users"#
         )
         .fetch_one(&*self.db)
         .await;
 
         // TODO: check not found
-        res.map_err(|e: sqlx::Error| UserRepositoryError::InternalError(e.to_string()))
+        res.map(User::from)
+            .map_err(|e: sqlx::Error| UserRepositoryError::InternalError(e.to_string()))
     }
 }

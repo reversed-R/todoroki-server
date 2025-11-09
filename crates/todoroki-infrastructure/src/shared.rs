@@ -23,12 +23,12 @@ pub struct DefaultRepositories {
 
 impl DefaultRepositories {
     pub async fn new(postgres_url: &str, jwk_url: &str) -> Result<Self, DefaultRepositoriesError> {
-        let postgresql = Postgresql::new(postgres_url).await?;
+        let postgresql: Postgresql = Postgresql::new(postgres_url).await?;
 
         Ok(Self {
-            todo_repository: PgTodoRepository::new(postgresql),
+            todo_repository: PgTodoRepository::new(postgresql.clone()),
             user_repository: PgUserRepository::new(postgresql),
-            user_auth_repository: FirebaseUserAuthRepository::new(jwk_url.clone()),
+            user_auth_repository: FirebaseUserAuthRepository::new(jwk_url.to_string()),
         })
     }
 }

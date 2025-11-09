@@ -43,3 +43,15 @@ impl User {
         }
     }
 }
+
+#[derive(Debug, Clone, Getters)]
+pub struct AuthVerifiedUser {
+    #[getset(get = "pub")]
+    email: UserEmail,
+}
+
+impl AuthVerifiedUser {
+    pub fn new(email: UserEmail) -> Self {
+        Self { email }
+    }
+}

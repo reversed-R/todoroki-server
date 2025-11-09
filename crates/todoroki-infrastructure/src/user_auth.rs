@@ -1,13 +1,9 @@
-use crate::shared::postgresql::Postgresql;
-
 use todoroki_domain::{
     entities::user_auth::VerificationKey,
     repositories::user_auth::{UserAuthRepository, UserAuthRepositoryError},
 };
 
-use jsonwebtoken::{
-    decode, decode_header, jwk::JwkSet, Algorithm, DecodingKey, TokenData, Validation,
-};
+use jsonwebtoken::{jwk::JwkSet, DecodingKey};
 use reqwest::ClientBuilder;
 use std::time::Duration;
 
@@ -26,11 +22,20 @@ impl UserAuthRepository for FirebaseUserAuthRepository {
         let client = ClientBuilder::new()
             .timeout(Duration::from_secs(60))
             .build()
-            .map_err(UserAuthRepositoryError::InternalError(
-                "Failed to create http client".to_string(),
-            ))?;
+            .map_err(|_| {
+                UserAuthRepositoryError::InternalError("Failed to create http client".to_string())
+            })?;
 
-        let jwks: JwkSet = client.get(self.jwk_url).send().await?.json().await?;
+        let jwks: JwkSet = client
+            .get(&self.jwk_url)
+            .send()
+            .await
+            .map_err(|_| UserAuthRepositoryError::InternalError("Failed to get JWKS".to_string()))?
+            .json()
+            .await
+            .map_err(|_| {
+                UserAuthRepositoryError::InternalError("Failed to deserialize JWKS".to_string())
+            })?;
 
         let jwk = jwks
             .find(&id)
@@ -38,9 +43,9 @@ impl UserAuthRepository for FirebaseUserAuthRepository {
                 "Jwk not found".to_string(),
             ))?;
 
-        let key = DecodingKey::from_jwk(jwk).map_err(UserAuthRepositoryError::InternalError(
-            "Failed to get key from jwk".to_string(),
-        ))?;
+        let key = DecodingKey::from_jwk(jwk).map_err(|_| {
+            UserAuthRepositoryError::InternalError("Failed to get key from jwk".to_string())
+        })?;
 
         Ok(VerificationKey::new(key))
     }

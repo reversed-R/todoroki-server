@@ -3,8 +3,10 @@ use std::error::Error;
 use dotenvy;
 use std::env;
 
+#[derive(Debug, Clone)]
 pub struct Config {
     postgres_url: String,
+    firebase_project_id: String,
 }
 
 impl Config {
@@ -23,10 +25,19 @@ impl Config {
         )
         .to_string();
 
-        Ok(Self { postgres_url })
+        let firebase_project_id = env::var("FIREBASE_PROJECT_ID")?;
+
+        Ok(Self {
+            postgres_url,
+            firebase_project_id,
+        })
     }
 
     pub fn postgres_url(&self) -> &str {
         &self.postgres_url
+    }
+
+    pub fn firebase_project_id(&self) -> &str {
+        &self.firebase_project_id
     }
 }

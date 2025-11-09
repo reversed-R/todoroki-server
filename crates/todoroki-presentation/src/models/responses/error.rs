@@ -26,6 +26,10 @@ enum ErrorResponseCode {
     InvalidDateTimeFormat,
     #[serde(rename = "uuid/invalid-format")]
     InvalidUuidFormat,
+    #[serde(rename = "user/repository-internal-error")]
+    UserRepositoryInternalError,
+    #[serde(rename = "user-auth/token-verification-error")]
+    UserAuthTokenVerificationError,
 }
 
 impl From<ErrorCode> for ErrorResponse {
@@ -45,6 +49,8 @@ impl IntoResponse for ErrorResponse {
             ErrorResponseCode::TodoRepositoryInternalError => StatusCode::INTERNAL_SERVER_ERROR,
             ErrorResponseCode::InvalidDateTimeFormat => StatusCode::BAD_REQUEST,
             ErrorResponseCode::InvalidUuidFormat => StatusCode::BAD_REQUEST,
+            ErrorResponseCode::UserRepositoryInternalError => StatusCode::INTERNAL_SERVER_ERROR,
+            ErrorResponseCode::UserAuthTokenVerificationError => StatusCode::UNAUTHORIZED,
         };
 
         (status_code, Json(self)).into_response()
@@ -59,6 +65,8 @@ impl From<&ErrorCode> for ErrorResponseCode {
             ErrorCode::TodoRepositoryInternalError(_) => Self::TodoRepositoryInternalError,
             ErrorCode::InvalidDateTimeFormat(_) => Self::InvalidDateTimeFormat,
             ErrorCode::InvalidUuidFormat(_) => Self::InvalidUuidFormat,
+            ErrorCode::UserRepositoryInternalError(_) => Self::UserRepositoryInternalError,
+            ErrorCode::UserAuthTokenVerificationError(_) => Self::UserAuthTokenVerificationError,
         }
     }
 }

@@ -3,6 +3,7 @@ use std::sync::Arc;
 use crate::config::Config;
 use todoroki_domain::repositories::Repositories;
 use todoroki_infrastructure::shared::{DefaultRepositories, DefaultRepositoriesError};
+use todoroki_use_case::shared::ConfigProvider;
 
 use thiserror::Error;
 use todoroki_use_case::{todo::TodoUseCase, user::UserUseCase};

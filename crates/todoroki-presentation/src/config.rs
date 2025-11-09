@@ -2,6 +2,7 @@ use std::error::Error;
 
 use dotenvy;
 use std::env;
+use todoroki_use_case::shared::ConfigProvider;
 
 #[derive(Debug, Clone)]
 pub struct Config {
@@ -36,8 +37,10 @@ impl Config {
     pub fn postgres_url(&self) -> &str {
         &self.postgres_url
     }
+}
 
-    pub fn firebase_project_id(&self) -> &str {
+impl ConfigProvider for Config {
+    fn firebase_project_id(&self) -> &str {
         &self.firebase_project_id
     }
 }

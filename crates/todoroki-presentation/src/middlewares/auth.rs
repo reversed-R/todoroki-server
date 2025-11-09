@@ -13,7 +13,7 @@ use todoroki_domain::{
     entities::user_auth::UserAuthToken, repositories::Repositories, value_objects::error::ErrorCode,
 };
 
-use crate::{models::responses::error::ErrorResponse, modules::Modules};
+use crate::{context::Context, models::responses::error::ErrorResponse, modules::Modules};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct Claims {

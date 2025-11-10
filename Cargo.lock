@@ -2462,6 +2462,7 @@ dependencies = [
  "todoroki-infrastructure",
  "todoroki-use-case",
  "tokio",
+ "tower-http",
  "utoipa",
  "uuid",
 ]
@@ -2581,6 +2582,7 @@ dependencies = [
  "tower",
  "tower-layer",
  "tower-service",
+ "tracing",
 ]
 
 [[package]]

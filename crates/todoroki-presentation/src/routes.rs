@@ -5,8 +5,9 @@ pub mod health;
 use crate::{middlewares, modules::Modules};
 use todoroki_infrastructure::shared::DefaultRepositories;
 
-use axum::{routing::{get, patch, post}, Router};
+use axum::{http::{header, Method}, routing::{get, patch, post}, Router};
 use std::sync::Arc;
+use tower_http::cors::{Any, CorsLayer};
 use utoipa::OpenApi;
 
 pub fn router(modules: Arc<Modules<DefaultRepositories>>) -> Router {
@@ -47,6 +48,12 @@ pub fn router(modules: Arc<Modules<DefaultRepositories>>) -> Router {
         .merge(todo_routes)
         .merge(user_routes)
         .with_state(modules)
+        .layer(
+            CorsLayer::new()
+                .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE])
+                .allow_methods([Method::GET, Method::PATCH, Method::POST])
+                .allow_origin(Any),
+        )
 }
 
 use crate::routes;

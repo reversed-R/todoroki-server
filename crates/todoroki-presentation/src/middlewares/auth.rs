@@ -1,9 +1,7 @@
 use std::sync::Arc;
-use std::time::Duration;
 
 use axum::{
     extract::{Request, State},
-    http::StatusCode,
     middleware::Next,
     response::IntoResponse,
 };
@@ -40,7 +38,7 @@ pub(crate) async fn jwt_auth(
                 ),
             ))?;
 
-    let authorization = authorization_header.to_str().map_err(|e| {
+    let authorization = authorization_header.to_str().map_err(|_| {
         ErrorResponse::from(ErrorCode::UserAuthTokenVerificationError(
             "invalid-authorization-header".to_string(),
         ))
@@ -58,7 +56,7 @@ pub(crate) async fn jwt_auth(
 
     let verified_user = modules
         .user_use_case()
-        .verify(UserAuthToken::new(jwt_token.to_string()))
+        .verify(UserAuthToken::new(jwt_token.to_string()), modules.config())
         .await
         .map_err(ErrorResponse::from)?;
 
@@ -88,7 +86,7 @@ pub(crate) async fn optional_jwt_auth(
         }
     };
 
-    let authorization = authorization_header.to_str().map_err(|e| {
+    let authorization = authorization_header.to_str().map_err(|_| {
         ErrorResponse::from(ErrorCode::UserAuthTokenVerificationError(
             "invalid-authorization-header".to_string(),
         ))
@@ -106,7 +104,7 @@ pub(crate) async fn optional_jwt_auth(
 
     let verified_user = modules
         .user_use_case()
-        .verify(UserAuthToken::new(jwt_token.to_string()))
+        .verify(UserAuthToken::new(jwt_token.to_string()), modules.config())
         .await
         .map_err(ErrorResponse::from)?;
 

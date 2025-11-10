@@ -24,7 +24,7 @@ pub fn router(modules: Arc<Modules<DefaultRepositories>>) -> Router {
         .route("/", get(todo::handle_get))
         .route_layer(axum::middleware::from_fn_with_state(
             Arc::clone(&modules),
-            middlewares::auth::jwt_auth,
+            middlewares::auth::optional_jwt_auth,
         ));
     
     let todo_routes = Router::new()

@@ -1,17 +1,13 @@
-use axum::{
-    extract::{Path, State},
-    response::IntoResponse,
-    Extension, Json,
-};
+use axum::{extract::State, response::IntoResponse, Extension, Json};
 use std::sync::Arc;
-use todoroki_domain::{entities::todo::TodoId, value_objects::error::ErrorCode};
+use todoroki_domain::value_objects::error::ErrorCode;
 use todoroki_use_case::shared::ContextProvider;
 
 use crate::{
     context::Context,
     models::{
         requests,
-        responses::{self, error::ErrorResponse, success::SuccessResponse},
+        responses::{error::ErrorResponse, success::SuccessResponse},
     },
     modules::Modules,
 };
@@ -41,7 +37,7 @@ pub async fn handle_post(
             .ok_or(ErrorResponse::from(ErrorCode::UserNotVerified))?,
     )?;
 
-    let res = modules.user_use_case().create(user).await;
+    let res = modules.user_use_case().create(user, &ctx).await;
 
     match res {
         Ok(id) => Ok(SuccessResponse::new(format!(

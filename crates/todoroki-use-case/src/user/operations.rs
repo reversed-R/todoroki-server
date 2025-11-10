@@ -1,4 +1,7 @@
-use crate::user::{UserUseCase, UserUseCaseError};
+use crate::{
+    shared::{ConfigProvider, ContextProvider},
+    user::{UserUseCase, UserUseCaseError},
+};
 
 use todoroki_domain::{
     entities::{
@@ -25,7 +28,11 @@ pub(crate) struct UserAuthClaims {
 }
 
 impl<R: Repositories> UserUseCase<R> {
-    pub async fn verify(&self, token: UserAuthToken) -> Result<AuthVerifiedUser, ErrorCode> {
+    pub async fn verify(
+        &self,
+        token: UserAuthToken,
+        config: &impl ConfigProvider,
+    ) -> Result<AuthVerifiedUser, ErrorCode> {
         let header = decode_header(token.clone().value()).map_err(|_| {
             ErrorCode::from(UserUseCaseError::UserAuthTokenVerificationError(
                 "Failed to decode jwt header".to_string(),
@@ -49,10 +56,10 @@ impl<R: Repositories> UserUseCase<R> {
 
         validation.validate_exp = true;
         validation.validate_nbf = false;
-        validation.set_audience(&[&self.firebase_project_id]);
+        validation.set_audience(&[config.firebase_project_id()]);
         validation.set_issuer(&[format!(
             "https://securetoken.google.com/{}",
-            &self.firebase_project_id
+            config.firebase_project_id()
         )]);
         validation.sub = None;
 
@@ -75,14 +82,22 @@ impl<R: Repositories> UserUseCase<R> {
         Ok(AuthVerifiedUser::new(UserEmail::new(data.claims.email)))
     }
 
-    pub async fn create(&self, user: User) -> Result<UserId, ErrorCode> {
+    pub async fn create(
+        &self,
+        user: User,
+        ctx: &impl ContextProvider,
+    ) -> Result<UserId, ErrorCode> {
         let res = self.repositories.user_repository().create(user).await;
 
         res.map_err(UserUseCaseError::UserRepositoryError)
             .map_err(|e| e.into())
     }
 
-    pub async fn get_by_id(&self, id: UserId) -> Result<User, ErrorCode> {
+    pub async fn get_by_id(
+        &self,
+        id: UserId,
+        ctx: &impl ContextProvider,
+    ) -> Result<User, ErrorCode> {
         let res = self.repositories.user_repository().get_by_id(id).await;
 
         res.map_err(UserUseCaseError::UserRepositoryError)

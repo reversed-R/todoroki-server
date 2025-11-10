@@ -7,7 +7,6 @@ use thiserror::Error;
 use todoroki_domain::repositories::{user::UserRepositoryError, Repositories};
 
 pub struct UserUseCase<R: Repositories> {
-    firebase_project_id: String,
     repositories: Arc<R>,
 }
 
@@ -20,10 +19,7 @@ pub enum UserUseCaseError {
 }
 
 impl<R: Repositories> UserUseCase<R> {
-    pub fn new(repositories: Arc<R>, firebase_project_id: String) -> Self {
-        Self {
-            firebase_project_id,
-            repositories,
-        }
+    pub fn new(repositories: Arc<R>) -> Self {
+        Self { repositories }
     }
 }

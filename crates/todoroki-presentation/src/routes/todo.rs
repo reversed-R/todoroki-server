@@ -1,12 +1,13 @@
 use axum::{
     extract::{Path, State},
     response::IntoResponse,
-    Json,
+    Extension, Json,
 };
 use std::sync::Arc;
 use todoroki_domain::entities::todo::TodoId;
 
 use crate::{
+    context::Context,
     models::{
         requests,
         responses::{self, error::ErrorResponse, success::SuccessResponse},
@@ -30,8 +31,9 @@ use todoroki_infrastructure::shared::DefaultRepositories;
 )]
 pub async fn handle_get(
     State(modules): State<Arc<Modules<DefaultRepositories>>>,
+    Extension(ctx): Extension<Context>,
 ) -> Result<impl IntoResponse, ErrorResponse> {
-    let res = modules.todo_use_case().list().await;
+    let res = modules.todo_use_case().list(&ctx).await;
 
     match res {
         Ok(todos) => Ok(Json(
@@ -59,11 +61,12 @@ pub async fn handle_get(
 )]
 pub async fn handle_post(
     State(modules): State<Arc<Modules<DefaultRepositories>>>,
+    Extension(ctx): Extension<Context>,
     Json(raw_todo): Json<requests::todo::Todo>,
 ) -> Result<impl IntoResponse, ErrorResponse> {
     let todo = raw_todo.try_into()?;
 
-    let res = modules.todo_use_case().create(todo).await;
+    let res = modules.todo_use_case().create(todo, &ctx).await;
 
     match res {
         Ok(id) => Ok(SuccessResponse::new(format!(
@@ -90,12 +93,13 @@ pub async fn handle_post(
 pub async fn handle_patch(
     Path(raw_id): Path<String>,
     State(modules): State<Arc<Modules<DefaultRepositories>>>,
+    Extension(ctx): Extension<Context>,
     Json(raw_cmd): Json<requests::todo::TodoUpdateCommand>,
 ) -> Result<impl IntoResponse, ErrorResponse> {
     let id = TodoId::try_from(raw_id)?;
     let cmd = raw_cmd.try_into_with_id(id)?;
 
-    let res = modules.todo_use_case().update(cmd).await;
+    let res = modules.todo_use_case().update(cmd, &ctx).await;
 
     match res {
         Ok(id) => Ok(SuccessResponse::new(format!("todo/updated",))),

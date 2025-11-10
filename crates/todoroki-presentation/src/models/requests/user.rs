@@ -1,11 +1,5 @@
 use serde::Deserialize;
-use todoroki_domain::{
-    entities::{
-        self,
-        todo::{TodoDescription, TodoId, TodoName, TodoPublishment},
-    },
-    value_objects::{datetime::DateTime, error::ErrorCode},
-};
+use todoroki_domain::{entities, value_objects::error::ErrorCode};
 use utoipa::ToSchema;
 
 #[derive(Debug, Clone, Deserialize, ToSchema)]

@@ -1,6 +1,5 @@
 use crate::shared::postgresql::Postgresql;
 
-use futures_util::{TryFutureExt, TryStreamExt};
 use sqlx::{prelude::FromRow, types::chrono};
 use todoroki_domain::{
     entities::user::{User, UserEmail, UserId, UserName},

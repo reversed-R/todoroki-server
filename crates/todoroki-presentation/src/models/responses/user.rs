@@ -1,7 +1,7 @@
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use todoroki_domain::entities::{self, todo::TodoPublishment};
+use todoroki_domain::entities;
 
 #[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct User {

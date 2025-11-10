@@ -48,7 +48,9 @@ pub struct TodoUpdateCommand {
 
 #[derive(Debug, Clone, Deserialize, ToSchema)]
 pub enum TodoUpdateProgressStatus {
+    #[serde(rename = "on-progress")]
     OnProgress,
+    #[serde(rename = "completed")]
     Completed,
 }
 

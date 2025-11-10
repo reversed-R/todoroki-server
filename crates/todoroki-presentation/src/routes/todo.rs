@@ -27,7 +27,7 @@ use todoroki_infrastructure::shared::DefaultRepositories;
         (status = 422, description = "Unprocessable Entity", body = ErrorResponse),
         (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
-    security(()),
+    security(("jwt_token" = []), ("nothing" = [])),
 )]
 pub async fn handle_get(
     State(modules): State<Arc<Modules<DefaultRepositories>>>,
@@ -57,7 +57,7 @@ pub async fn handle_get(
         (status = 422, description = "Unprocessable Entity", body = ErrorResponse),
         (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
-    security(()),
+    security(("jwt_token" = [])),
 )]
 pub async fn handle_post(
     State(modules): State<Arc<Modules<DefaultRepositories>>>,
@@ -88,7 +88,7 @@ pub async fn handle_post(
         (status = 422, description = "Unprocessable Entity", body = ErrorResponse),
         (status = 500, description = "Internal Server Error", body = ErrorResponse),
     ),
-    security(()),
+    security(("jwt_token" = [])),
 )]
 pub async fn handle_patch(
     Path(raw_id): Path<String>,

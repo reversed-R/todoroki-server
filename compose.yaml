@@ -8,7 +8,7 @@ services:
       - -c
       - |
         cargo sqlx migrate run
-        cargo watch -x "run --package todoroki-presentation"
+        cargo watch -x "run --package todoroki-presentation --bin todoroki-presentation"
     ports:
       - 8080:8080
     volumes:

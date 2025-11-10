@@ -1,13 +1,6 @@
-mod config;
-mod context;
-mod middlewares;
-mod models;
-mod modules;
-mod routes;
-
 use std::sync::Arc;
 
-use config::Config;
+use todoroki_presentation::{config::Config, modules, routes};
 
 #[tokio::main]
 async fn main() {

@@ -52,7 +52,7 @@ pub fn router(modules: Arc<Modules<DefaultRepositories>>) -> Router {
 use crate::routes;
 #[derive(OpenApi)]
 #[openapi(
-    info(title = "Todo Manager API", license(name = "MIT", identifier = "MIT")),
+    info(title = "Todoroki API", license(name = "MIT", identifier = "MIT")),
     tags(
         (name = "health", description = "APIの死活チェック"),
         (name = "todo", description = "Todo関連の操作"),
@@ -66,4 +66,4 @@ use crate::routes;
         routes::user::handle_post,
     )
 )]
-pub struct _ApiDocs;
+pub struct ApiDocs;

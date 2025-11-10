@@ -30,6 +30,8 @@ enum ErrorResponseCode {
     UserRepositoryInternalError,
     #[serde(rename = "user-auth/token-verification-error")]
     UserAuthTokenVerificationError,
+    #[serde(rename = "user-auth/not-verified")]
+    UserNotVerified,
 }
 
 impl From<ErrorCode> for ErrorResponse {
@@ -51,6 +53,7 @@ impl IntoResponse for ErrorResponse {
             ErrorResponseCode::InvalidUuidFormat => StatusCode::BAD_REQUEST,
             ErrorResponseCode::UserRepositoryInternalError => StatusCode::INTERNAL_SERVER_ERROR,
             ErrorResponseCode::UserAuthTokenVerificationError => StatusCode::UNAUTHORIZED,
+            ErrorResponseCode::UserNotVerified => StatusCode::UNAUTHORIZED,
         };
 
         (status_code, Json(self)).into_response()
@@ -67,6 +70,7 @@ impl From<&ErrorCode> for ErrorResponseCode {
             ErrorCode::InvalidUuidFormat(_) => Self::InvalidUuidFormat,
             ErrorCode::UserRepositoryInternalError(_) => Self::UserRepositoryInternalError,
             ErrorCode::UserAuthTokenVerificationError(_) => Self::UserAuthTokenVerificationError,
+            ErrorCode::UserNotVerified => Self::UserNotVerified,
         }
     }
 }

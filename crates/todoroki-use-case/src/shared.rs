@@ -1,7 +1,7 @@
 use todoroki_domain::entities::user::UserEmail;
 
 pub trait ContextProvider {
-    fn user_email(&self) -> &UserEmail;
+    fn user_email(&self) -> &Option<UserEmail>;
 
     fn config(&self) -> &impl ConfigProvider;
 }

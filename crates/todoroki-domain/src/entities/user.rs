@@ -42,6 +42,16 @@ impl User {
             updated_at,
         }
     }
+
+    pub fn generate(name: UserName, email: UserEmail) -> Self {
+        Self {
+            id: UserId::generate(),
+            name,
+            email,
+            created_at: DateTime::now(),
+            updated_at: DateTime::now(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Getters)]

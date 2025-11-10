@@ -19,6 +19,7 @@ pub enum ErrorCode {
     InvalidDateTimeFormat(String),
     InvalidUuidFormat(String),
     UserAuthTokenVerificationError(String),
+    UserNotVerified,
 }
 
 impl Display for ErrorCode {
@@ -36,6 +37,9 @@ impl Display for ErrorCode {
             }
             Self::UserAuthTokenVerificationError(s) => {
                 write!(f, "user-auth/token-verification-failed; error={s}")
+            }
+            Self::UserNotVerified => {
+                write!(f, "user-auth/not-verified")
             }
         }
     }

@@ -8,7 +8,11 @@ use todoroki_domain::{
         user::{AuthVerifiedUser, User, UserEmail, UserId},
         user_auth::UserAuthToken,
     },
-    repositories::{user::UserRepository, user_auth::UserAuthRepository, Repositories},
+    repositories::{
+        user::UserRepository,
+        user_auth::{UserAuthRepository, UserAuthRepositoryError},
+        Repositories,
+    },
     value_objects::error::ErrorCode,
 };
 
@@ -50,7 +54,14 @@ impl<R: Repositories> UserUseCase<R> {
             .user_auth_repository()
             .get_key_by_id(kid.clone())
             .await
-            .map_err(|_| ErrorCode::from(UserUseCaseError::UserAuthTokenKeyNotFound(kid)))?;
+            .map_err(|e| match e {
+                UserAuthRepositoryError::KeyNotFound(k) => {
+                    ErrorCode::from(UserUseCaseError::UserAuthTokenKeyNotFound(k))
+                }
+                UserAuthRepositoryError::InternalError(e) => {
+                    ErrorCode::from(UserUseCaseError::UserAuthTokenVerificationError(e))
+                }
+            })?;
 
         let mut validation = Validation::new(Algorithm::RS256);
 
@@ -71,7 +82,7 @@ impl<R: Repositories> UserUseCase<R> {
             })
             .map_err(ErrorCode::from)?;
 
-        if data.claims.email_verified {
+        if !data.claims.email_verified {
             return Err(ErrorCode::from(
                 UserUseCaseError::UserAuthTokenVerificationError(
                     "Email not verified yet".to_string(),

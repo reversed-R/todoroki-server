@@ -6,6 +6,8 @@ use crate::entities::user_auth::VerificationKey;
 pub enum UserAuthRepositoryError {
     #[error("Internal Error: {0:?}")]
     InternalError(String),
+    #[error("Key Not Found: {0:?}")]
+    KeyNotFound(String),
 }
 
 #[allow(async_fn_in_trait)]

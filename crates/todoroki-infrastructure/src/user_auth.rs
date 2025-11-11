@@ -39,9 +39,7 @@ impl UserAuthRepository for FirebaseUserAuthRepository {
 
         let jwk = jwks
             .find(&id)
-            .ok_or(UserAuthRepositoryError::InternalError(
-                "Jwk not found".to_string(),
-            ))?;
+            .ok_or(UserAuthRepositoryError::KeyNotFound(id))?;
 
         let key = DecodingKey::from_jwk(jwk).map_err(|_| {
             UserAuthRepositoryError::InternalError("Failed to get key from jwk".to_string())

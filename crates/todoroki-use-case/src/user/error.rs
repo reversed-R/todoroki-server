@@ -12,7 +12,7 @@ impl From<UserUseCaseError> for ErrorCode {
                 Self::UserAuthTokenVerificationError(e)
             }
             UserUseCaseError::UserAuthTokenKeyNotFound(k) => {
-                Self::UserAuthTokenVerificationError(k)
+                Self::UserAuthTokenVerificationError(format!("key-not-found; kid={k}"))
             }
         }
     }

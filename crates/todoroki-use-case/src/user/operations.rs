@@ -114,4 +114,19 @@ impl<R: Repositories> UserUseCase<R> {
         res.map_err(UserUseCaseError::UserRepositoryError)
             .map_err(|e| e.into())
     }
+
+    pub async fn get_by_email(
+        &self,
+        email: UserEmail,
+        ctx: &impl ContextProvider,
+    ) -> Result<User, ErrorCode> {
+        let res = self
+            .repositories
+            .user_repository()
+            .get_by_email(email)
+            .await;
+
+        res.map_err(UserUseCaseError::UserRepositoryError)
+            .map_err(|e| e.into())
+    }
 }

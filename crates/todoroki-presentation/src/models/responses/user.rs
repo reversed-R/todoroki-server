@@ -4,15 +4,15 @@ use utoipa::ToSchema;
 use todoroki_domain::entities;
 
 #[derive(Debug, Clone, Serialize, ToSchema)]
-pub struct User {
+pub struct UserResponse {
     pub id: String,
     pub name: String,
     pub created_at: String,
     pub updated_at: String,
 }
 
-impl From<&entities::user::User> for User {
-    fn from(value: &entities::user::User) -> Self {
+impl From<entities::user::User> for UserResponse {
+    fn from(value: entities::user::User) -> Self {
         Self {
             id: value.id().clone().value().as_hyphenated().to_string(),
             name: value.name().clone().value(),

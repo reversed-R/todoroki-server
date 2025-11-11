@@ -3,11 +3,11 @@ use todoroki_domain::{entities, value_objects::error::ErrorCode};
 use utoipa::ToSchema;
 
 #[derive(Debug, Clone, Deserialize, ToSchema)]
-pub struct User {
+pub struct UserRequest {
     pub name: String,
 }
 
-impl User {
+impl UserRequest {
     pub fn try_into_with_email(
         self,
         email: entities::user::UserEmail,

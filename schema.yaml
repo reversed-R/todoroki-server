@@ -152,7 +152,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/UserRequest'
         required: true
       responses:
         '201':
@@ -161,6 +161,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - jwt_token: []
+  /users/me:
+    get:
+      tags:
+      - user
+      operationId: getUserOwn
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
         '400':
           description: Bad Request
           content:
@@ -264,12 +298,28 @@ components:
       enum:
       - on-progress
       - completed
-    User:
+    UserRequest:
       type: object
       required:
       - name
       properties:
         name:
+          type: string
+    UserResponse:
+      type: object
+      required:
+      - id
+      - name
+      - created_at
+      - updated_at
+      properties:
+        created_at:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        updated_at:
           type: string
 tags:
 - name: health

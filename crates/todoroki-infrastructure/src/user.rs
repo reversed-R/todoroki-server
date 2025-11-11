@@ -79,7 +79,29 @@ impl UserRepository for PgUserRepository {
             users.created_at AS "created_at",
             users.updated_at AS "updated_at",
             users.deleted_at AS "deleted_at?"
-            FROM users"#
+            FROM users WHERE id = $1"#,
+            id.value()
+        )
+        .fetch_one(&*self.db)
+        .await;
+
+        // TODO: check not found
+        res.map(User::from)
+            .map_err(|e: sqlx::Error| UserRepositoryError::InternalError(e.to_string()))
+    }
+
+    async fn get_by_email(&self, email: UserEmail) -> Result<User, UserRepositoryError> {
+        let res = sqlx::query_as!(
+            UserRow,
+            r#"SELECT
+            users.id AS "id",
+            users.name AS "name",
+            users.email AS "email",
+            users.created_at AS "created_at",
+            users.updated_at AS "updated_at",
+            users.deleted_at AS "deleted_at?"
+            FROM users WHERE email = $1"#,
+            email.value()
         )
         .fetch_one(&*self.db)
         .await;

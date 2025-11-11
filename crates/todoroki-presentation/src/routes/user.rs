@@ -7,11 +7,44 @@ use crate::{
     context::Context,
     models::{
         requests,
-        responses::{error::ErrorResponse, success::SuccessResponse},
+        responses::{self, error::ErrorResponse, success::SuccessResponse},
     },
     modules::Modules,
 };
 use todoroki_infrastructure::shared::DefaultRepositories;
+
+#[utoipa::path(
+    get,
+    path = "/users/me",
+    operation_id = "getUserOwn",
+    tag = "user",
+    responses(
+        (status = 200, description = "OK", body = Vec<responses::user::UserResponse>),
+        (status = 400, description = "Bad Request", body = ErrorResponse),
+        (status = 422, description = "Unprocessable Entity", body = ErrorResponse),
+        (status = 500, description = "Internal Server Error", body = ErrorResponse),
+    ),
+    security(("jwt_token" = [])),
+)]
+pub async fn handle_get_me(
+    State(modules): State<Arc<Modules<DefaultRepositories>>>,
+    Extension(ctx): Extension<Context>,
+) -> Result<impl IntoResponse, ErrorResponse> {
+    let res = modules
+        .user_use_case()
+        .get_by_email(
+            ctx.user_email()
+                .clone()
+                .ok_or(ErrorResponse::from(ErrorCode::UserNotVerified))?,
+            &ctx,
+        )
+        .await;
+
+    match res {
+        Ok(user) => Ok(Json(responses::user::UserResponse::from(user))),
+        Err(e) => Err(e.into()),
+    }
+}
 
 #[utoipa::path(
     post,
@@ -29,7 +62,7 @@ use todoroki_infrastructure::shared::DefaultRepositories;
 pub async fn handle_post(
     State(modules): State<Arc<Modules<DefaultRepositories>>>,
     Extension(ctx): Extension<Context>,
-    Json(raw_user): Json<requests::user::User>,
+    Json(raw_user): Json<requests::user::UserRequest>,
 ) -> Result<impl IntoResponse, ErrorResponse> {
     let user = raw_user.try_into_with_email(
         ctx.user_email()

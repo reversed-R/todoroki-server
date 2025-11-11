@@ -35,6 +35,7 @@ pub fn router(modules: Arc<Modules<DefaultRepositories>>) -> Router {
     // user の作成操作は常に認証を要する
     let user_auth_routes = Router::new()
         .route("/", post(user::handle_post))
+        .route("/me", get(user::handle_get_me))
         .route_layer(axum::middleware::from_fn_with_state(
             Arc::clone(&modules),
             middlewares::auth::jwt_auth,
@@ -71,6 +72,7 @@ use crate::routes;
         routes::todo::handle_post,
         routes::todo::handle_patch,
         routes::user::handle_post,
+        routes::user::handle_get_me,
     )
 )]
 pub struct ApiDocs;

@@ -33,7 +33,7 @@ pub async fn handle_get_me(
     State(modules): State<Arc<Modules<DefaultRepositories>>>,
     Extension(ctx): Extension<Context>,
 ) -> Result<impl IntoResponse, ErrorResponse> {
-    match ctx.client() {
+    match ctx.client().client() {
         Client::User(user) => Ok(Json(responses::user::UserResponse::from(user.to_owned()))),
         Client::Unregistered(_) => Err(ErrorCode::UserNotVerified.into()),
         Client::Unverified => Err(ErrorCode::UserNotVerified.into()),
@@ -58,7 +58,7 @@ pub async fn handle_post(
     Extension(ctx): Extension<Context>,
     Json(raw_user): Json<requests::user::UserRequest>,
 ) -> Result<impl IntoResponse, ErrorResponse> {
-    let email = match ctx.client() {
+    let email = match ctx.client().client() {
         Client::User(_) => todo!(), // user already exists for the email
         Client::Unverified => return Err(ErrorResponse::from(ErrorCode::UserNotVerified)),
         Client::Unregistered(email) => email,

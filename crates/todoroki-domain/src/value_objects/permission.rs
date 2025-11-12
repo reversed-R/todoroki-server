@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use crate::{
     entities::{
-        client::Client,
+        client::{Client, ContextedClient},
         user::{User, UserRole},
     },
     value_objects::error::ErrorCode,
@@ -26,25 +26,29 @@ pub enum Permission {
     DeleteDoit,
 }
 
-impl Client {
+impl<'a> ContextedClient<'a> {
     pub fn has_permission(&self, permission: Permission) -> Result<(), ErrorCode> {
-        let has = match self {
-            Self::User(u) => match u.role() {
+        let has = match self.client() {
+            Client::User(u) => match u.role() {
                 UserRole::Owner => true,
                 UserRole::Contributor => matches!(
                     permission,
                     Permission::ReadTodo | Permission::CreateDoit | Permission::ReadDoit
                 ),
             },
-            Self::Unregistered(_) => {
+            Client::Unregistered(email) => {
                 matches!(permission, Permission::ReadTodo | Permission::ReadDoit)
                     || if let Permission::CreateUser(u) = permission.clone() {
-                        u.role() == &UserRole::Contributor
+                        (u.role() == &UserRole::Contributor
+                            || (u.email().clone().value()
+                                == self.default_owner_email().to_owned().to_owned().value())
+                                && u.role() == &UserRole::Owner)
+                            && u.email().clone().value() == email.clone().value()
                     } else {
                         false
                     }
             }
-            Self::Unverified => matches!(permission, Permission::ReadTodo | Permission::ReadDoit),
+            Client::Unverified => matches!(permission, Permission::ReadTodo | Permission::ReadDoit),
         };
 
         if has {

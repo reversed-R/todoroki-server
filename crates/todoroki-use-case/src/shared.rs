@@ -1,7 +1,7 @@
-use todoroki_domain::entities::client::Client;
+use todoroki_domain::entities::client::ContextedClient;
 
 pub trait ContextProvider {
-    fn client(&self) -> &Client;
+    fn client<'a>(&'a self) -> ContextedClient<'a>;
 
     fn config(&self) -> &impl ConfigProvider;
 }

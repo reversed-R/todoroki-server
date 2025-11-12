@@ -1,5 +1,8 @@
-use todoroki_domain::entities::client::Client;
-use todoroki_use_case::shared::ContextProvider;
+use todoroki_domain::entities::{
+    client::{Client, ContextedClient},
+    user::UserEmail,
+};
+use todoroki_use_case::shared::{ConfigProvider, ContextProvider};
 
 use crate::config::Config;
 
@@ -16,11 +19,14 @@ impl Context {
 }
 
 impl ContextProvider for Context {
-    fn client(&self) -> &Client {
-        &self.client
+    fn client<'a>(&'a self) -> ContextedClient<'a> {
+        ContextedClient::new(
+            &self.client,
+            UserEmail::new(self.config.default_owner_email().to_string()),
+        )
     }
 
-    fn config(&self) -> &impl todoroki_use_case::shared::ConfigProvider {
+    fn config(&self) -> &impl ConfigProvider {
         &self.config
     }
 }

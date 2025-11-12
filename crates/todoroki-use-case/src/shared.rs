@@ -8,4 +8,6 @@ pub trait ContextProvider {
 
 pub trait ConfigProvider {
     fn firebase_project_id(&self) -> &str;
+
+    fn default_owner_email(&self) -> &str;
 }

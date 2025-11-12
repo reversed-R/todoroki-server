@@ -67,7 +67,7 @@ impl From<&ErrorCode> for ErrorResponseCode {
     fn from(value: &ErrorCode) -> Self {
         match value {
             ErrorCode::TodoNotFound(_) => Self::TodoNotFound,
-            ErrorCode::PermissionDenied => Self::PermissionDenied,
+            ErrorCode::PermissionDenied(_) => Self::PermissionDenied,
             ErrorCode::TodoRepositoryInternalError(_) => Self::TodoRepositoryInternalError,
             ErrorCode::InvalidDateTimeFormat(_) => Self::InvalidDateTimeFormat,
             ErrorCode::InvalidUuidFormat(_) => Self::InvalidUuidFormat,

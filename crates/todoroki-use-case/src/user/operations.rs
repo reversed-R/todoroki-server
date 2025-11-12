@@ -14,7 +14,7 @@ use todoroki_domain::{
         user_auth::{UserAuthRepository, UserAuthRepositoryError},
         Repositories,
     },
-    value_objects::error::ErrorCode,
+    value_objects::{error::ErrorCode, permission::Permission},
 };
 
 use serde::{Deserialize, Serialize};
@@ -112,6 +112,9 @@ impl<R: Repositories> UserUseCase<R> {
         user: User,
         ctx: &impl ContextProvider,
     ) -> Result<UserId, ErrorCode> {
+        ctx.client()
+            .has_permission(Permission::CreateUser(user.clone()))?;
+
         let res = self.repositories.user_repository().create(user).await;
 
         res.map_err(UserUseCaseError::UserRepositoryError)
@@ -123,6 +126,8 @@ impl<R: Repositories> UserUseCase<R> {
         id: UserId,
         ctx: &impl ContextProvider,
     ) -> Result<User, ErrorCode> {
+        ctx.client().has_permission(Permission::ReadUser)?;
+
         let res = self
             .repositories
             .user_repository()

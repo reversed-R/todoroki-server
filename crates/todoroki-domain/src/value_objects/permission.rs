@@ -1,7 +1,19 @@
-use crate::entities::{client::Client, user::UserRole};
+use std::fmt::Display;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+use crate::{
+    entities::{
+        client::Client,
+        user::{User, UserRole},
+    },
+    value_objects::error::ErrorCode,
+};
+
+#[derive(Debug, Clone)]
 pub enum Permission {
+    CreateUser(User),
+    ReadUser,
+    // UpdateUser(User),
+    // DeleteUser(User),
     CreateTodo,
     ReadTodo,
     ReadPrivateTodo, // name や description に private ガードがかけられているものを読めるか
@@ -15,8 +27,8 @@ pub enum Permission {
 }
 
 impl Client {
-    pub(crate) fn has_permission(&self, permission: Permission) -> bool {
-        match self {
+    pub fn has_permission(&self, permission: Permission) -> Result<(), ErrorCode> {
+        let has = match self {
             Self::User(u) => match u.role() {
                 UserRole::Owner => true,
                 UserRole::Contributor => matches!(
@@ -26,8 +38,36 @@ impl Client {
             },
             Self::Unregistered(_) => {
                 matches!(permission, Permission::ReadTodo | Permission::ReadDoit)
+                    || if let Permission::CreateUser(u) = permission.clone() {
+                        u.role() == &UserRole::Contributor
+                    } else {
+                        false
+                    }
             }
             Self::Unverified => matches!(permission, Permission::ReadTodo | Permission::ReadDoit),
+        };
+
+        if has {
+            Ok(())
+        } else {
+            Err(ErrorCode::PermissionDenied(permission))
+        }
+    }
+}
+
+impl Display for Permission {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::CreateTodo => write!(f, "create-todo"),
+            Self::ReadTodo => write!(f, "read-todo"),
+            Self::ReadPrivateTodo => write!(f, "read-private-todo"),
+            Self::UpdateTodo => write!(f, "update-todo"),
+            Self::DeleteTodo => write!(f, "delete-todo"),
+            Self::CreateDoit => write!(f, "create-doit"),
+            Self::ReadDoit => write!(f, "read-doit"),
+            Self::DeleteDoit => write!(f, "delete-doit"),
+            Self::CreateUser(_) => write!(f, "create-user"),
+            Self::ReadUser => write!(f, "read-user"),
         }
     }
 }

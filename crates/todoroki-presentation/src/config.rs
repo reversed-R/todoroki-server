@@ -8,6 +8,7 @@ use todoroki_use_case::shared::ConfigProvider;
 pub struct Config {
     postgres_url: String,
     firebase_project_id: String,
+    default_owner_email: String,
 }
 
 impl Config {
@@ -28,9 +29,12 @@ impl Config {
 
         let firebase_project_id = env::var("FIREBASE_PROJECT_ID")?;
 
+        let default_owner_email = env::var("APP_DEFAULT_OWNER_EMAIL")?;
+
         Ok(Self {
             postgres_url,
             firebase_project_id,
+            default_owner_email,
         })
     }
 
@@ -42,5 +46,9 @@ impl Config {
 impl ConfigProvider for Config {
     fn firebase_project_id(&self) -> &str {
         &self.firebase_project_id
+    }
+
+    fn default_owner_email(&self) -> &str {
+        &self.default_owner_email
     }
 }

@@ -53,10 +53,10 @@ impl User {
         }
     }
 
-    pub fn generate(name: UserName, email: UserEmail) -> Self {
+    pub fn generate(role: UserRole, name: UserName, email: UserEmail) -> Self {
         Self {
             id: UserId::generate(),
-            role: UserRole::Contributor,
+            role,
             name,
             email,
             created_at: DateTime::now(),

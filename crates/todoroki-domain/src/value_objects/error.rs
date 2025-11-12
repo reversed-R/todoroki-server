@@ -6,12 +6,13 @@ use thiserror::Error;
 use crate::{
     entities::{todo::TodoId, user::UserId},
     repositories::{todo::TodoRepositoryError, user::UserRepositoryError},
+    value_objects::permission::Permission,
 };
 
 #[derive(Debug, Clone, Error)]
 pub enum ErrorCode {
     TodoNotFound(TodoId),
-    PermissionDenied,
+    PermissionDenied(Permission),
     #[error(transparent)]
     TodoRepositoryInternalError(#[from] TodoRepositoryError),
     #[error(transparent)]
@@ -27,7 +28,7 @@ impl Display for ErrorCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::TodoNotFound(id) => write!(f, "todo/not-found; id={}", id.clone().value()),
-            Self::PermissionDenied => write!(f, "permission/denied"),
+            Self::PermissionDenied(perm) => write!(f, "permission/denied; permission={perm}"),
             Self::TodoRepositoryInternalError(e) => {
                 write!(f, "todo/repository-internal-error; error={e}")
             }

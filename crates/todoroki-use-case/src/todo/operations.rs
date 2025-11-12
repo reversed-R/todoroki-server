@@ -6,7 +6,7 @@ use crate::{
 use todoroki_domain::{
     entities::todo::{Todo, TodoId, TodoUpdateCommand},
     repositories::{todo::TodoRepository, Repositories},
-    value_objects::error::ErrorCode,
+    value_objects::{error::ErrorCode, permission::Permission},
 };
 
 impl<R: Repositories> TodoUseCase<R> {
@@ -15,6 +15,8 @@ impl<R: Repositories> TodoUseCase<R> {
         todo: Todo,
         ctx: &impl ContextProvider,
     ) -> Result<TodoId, ErrorCode> {
+        ctx.client().has_permission(Permission::CreateTodo)?;
+
         let res = self.repositories.todo_repository().create(todo).await;
 
         res.map_err(TodoUseCaseError::TodoRepositoryError)
@@ -22,6 +24,8 @@ impl<R: Repositories> TodoUseCase<R> {
     }
 
     pub async fn list(&self, ctx: &impl ContextProvider) -> Result<Vec<Todo>, ErrorCode> {
+        ctx.client().has_permission(Permission::ReadTodo)?;
+
         let res = self.repositories.todo_repository().list().await;
 
         res.map_err(TodoUseCaseError::TodoRepositoryError)
@@ -33,6 +37,8 @@ impl<R: Repositories> TodoUseCase<R> {
         cmd: TodoUpdateCommand,
         ctx: &impl ContextProvider,
     ) -> Result<(), ErrorCode> {
+        ctx.client().has_permission(Permission::UpdateTodo)?;
+
         let res = self.repositories.todo_repository().update(cmd).await;
 
         res.map_err(TodoUseCaseError::TodoRepositoryError)

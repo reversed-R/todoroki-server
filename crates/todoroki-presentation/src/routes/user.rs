@@ -1,7 +1,10 @@
 use axum::{extract::State, response::IntoResponse, Extension, Json};
 use std::sync::Arc;
-use todoroki_domain::{entities::client::Client, value_objects::error::ErrorCode};
-use todoroki_use_case::shared::ContextProvider;
+use todoroki_domain::{
+    entities::{client::Client, user::UserRole},
+    value_objects::error::ErrorCode,
+};
+use todoroki_use_case::shared::{ConfigProvider, ContextProvider};
 
 use crate::{
     context::Context,
@@ -61,7 +64,13 @@ pub async fn handle_post(
         Client::Unregistered(email) => email,
     };
 
-    let user = raw_user.try_into_with_email(email.clone())?;
+    let role = if ctx.config().default_owner_email() == email.clone().value() {
+        UserRole::Owner
+    } else {
+        UserRole::Contributor
+    };
+
+    let user = raw_user.into_entity(role, email.clone())?;
 
     let res = modules.user_use_case().create(user, &ctx).await;
 

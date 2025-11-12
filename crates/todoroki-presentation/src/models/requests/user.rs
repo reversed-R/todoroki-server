@@ -8,11 +8,13 @@ pub struct UserRequest {
 }
 
 impl UserRequest {
-    pub fn try_into_with_email(
+    pub fn into_entity(
         self,
+        role: entities::user::UserRole,
         email: entities::user::UserEmail,
     ) -> Result<entities::user::User, ErrorCode> {
         Ok(entities::user::User::generate(
+            role,
             entities::user::UserName::new(self.name),
             email,
         ))

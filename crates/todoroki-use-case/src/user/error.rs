@@ -14,6 +14,7 @@ impl From<UserUseCaseError> for ErrorCode {
             UserUseCaseError::UserAuthTokenKeyNotFound(k) => {
                 Self::UserAuthTokenVerificationError(format!("key-not-found; kid={k}"))
             }
+            UserUseCaseError::UserNotFound(id) => Self::UserNotFound(id),
         }
     }
 }
@@ -29,6 +30,9 @@ impl Display for UserUseCaseError {
             }
             UserUseCaseError::UserAuthTokenKeyNotFound(k) => {
                 write!(f, "user-use-case/auth-token-key-not-found; kid={k}")
+            }
+            UserUseCaseError::UserNotFound(id) => {
+                write!(f, "user-use-case/user-not-found; id={}", id.clone().value())
             }
         }
     }

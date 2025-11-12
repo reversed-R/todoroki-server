@@ -4,7 +4,10 @@ pub mod operations;
 use std::sync::Arc;
 use thiserror::Error;
 
-use todoroki_domain::repositories::{user::UserRepositoryError, Repositories};
+use todoroki_domain::{
+    entities::user::UserId,
+    repositories::{user::UserRepositoryError, Repositories},
+};
 
 pub struct UserUseCase<R: Repositories> {
     repositories: Arc<R>,
@@ -16,6 +19,7 @@ pub enum UserUseCaseError {
     UserRepositoryError(#[from] UserRepositoryError),
     UserAuthTokenVerificationError(String),
     UserAuthTokenKeyNotFound(String),
+    UserNotFound(UserId),
 }
 
 impl<R: Repositories> UserUseCase<R> {

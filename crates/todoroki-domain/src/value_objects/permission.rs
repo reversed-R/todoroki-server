@@ -1,4 +1,4 @@
-use crate::entities::user::ClientRole;
+use crate::entities::{client::Client, user::UserRole};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Permission {
@@ -14,15 +14,20 @@ pub enum Permission {
     DeleteDoit,
 }
 
-impl ClientRole {
-    pub(crate) fn has_permission(self, permission: Permission) -> bool {
+impl Client {
+    pub(crate) fn has_permission(&self, permission: Permission) -> bool {
         match self {
-            Self::Owner => true,
-            Self::Contributor => matches!(
-                permission,
-                Permission::ReadTodo | Permission::CreateDoit | Permission::ReadDoit
-            ),
-            Self::NotVerified => matches!(permission, Permission::ReadTodo | Permission::ReadDoit),
+            Self::User(u) => match u.role() {
+                UserRole::Owner => true,
+                UserRole::Contributor => matches!(
+                    permission,
+                    Permission::ReadTodo | Permission::CreateDoit | Permission::ReadDoit
+                ),
+            },
+            Self::Unregistered(_) => {
+                matches!(permission, Permission::ReadTodo | Permission::ReadDoit)
+            }
+            Self::Unverified => matches!(permission, Permission::ReadTodo | Permission::ReadDoit),
         }
     }
 }

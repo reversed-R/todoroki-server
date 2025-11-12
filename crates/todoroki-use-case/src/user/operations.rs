@@ -5,7 +5,8 @@ use crate::{
 
 use todoroki_domain::{
     entities::{
-        user::{AuthVerifiedUser, User, UserEmail, UserId},
+        client::Client,
+        user::{User, UserEmail, UserId},
         user_auth::UserAuthToken,
     },
     repositories::{
@@ -36,7 +37,7 @@ impl<R: Repositories> UserUseCase<R> {
         &self,
         token: UserAuthToken,
         config: &impl ConfigProvider,
-    ) -> Result<AuthVerifiedUser, ErrorCode> {
+    ) -> Result<Client, ErrorCode> {
         let header = decode_header(token.clone().value()).map_err(|_| {
             ErrorCode::from(UserUseCaseError::UserAuthTokenVerificationError(
                 "Failed to decode jwt header".to_string(),
@@ -90,7 +91,20 @@ impl<R: Repositories> UserUseCase<R> {
             ));
         }
 
-        Ok(AuthVerifiedUser::new(UserEmail::new(data.claims.email)))
+        let email = UserEmail::new(data.claims.email);
+
+        let opt_user = self
+            .repositories
+            .user_repository()
+            .get_by_email(email.clone())
+            .await
+            .map_err(UserUseCaseError::UserRepositoryError)
+            .map_err(ErrorCode::from)?;
+
+        match opt_user {
+            Some(u) => Ok(Client::User(u)),
+            None => Ok(Client::Unregistered(email)),
+        }
     }
 
     pub async fn create(
@@ -109,24 +123,15 @@ impl<R: Repositories> UserUseCase<R> {
         id: UserId,
         ctx: &impl ContextProvider,
     ) -> Result<User, ErrorCode> {
-        let res = self.repositories.user_repository().get_by_id(id).await;
-
-        res.map_err(UserUseCaseError::UserRepositoryError)
-            .map_err(|e| e.into())
-    }
-
-    pub async fn get_by_email(
-        &self,
-        email: UserEmail,
-        ctx: &impl ContextProvider,
-    ) -> Result<User, ErrorCode> {
         let res = self
             .repositories
             .user_repository()
-            .get_by_email(email)
+            .get_by_id(id.clone())
             .await;
 
         res.map_err(UserUseCaseError::UserRepositoryError)
+            .map_err(ErrorCode::from)?
+            .ok_or(UserUseCaseError::UserNotFound(id))
             .map_err(|e| e.into())
     }
 }

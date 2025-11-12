@@ -4,7 +4,7 @@ use std::fmt::Display;
 use thiserror::Error;
 
 use crate::{
-    entities::todo::TodoId,
+    entities::{todo::TodoId, user::UserId},
     repositories::{todo::TodoRepositoryError, user::UserRepositoryError},
 };
 
@@ -20,6 +20,7 @@ pub enum ErrorCode {
     InvalidUuidFormat(String),
     UserAuthTokenVerificationError(String),
     UserNotVerified,
+    UserNotFound(UserId),
 }
 
 impl Display for ErrorCode {
@@ -40,6 +41,9 @@ impl Display for ErrorCode {
             }
             Self::UserNotVerified => {
                 write!(f, "user-auth/not-verified")
+            }
+            Self::UserNotFound(id) => {
+                write!(f, "user/not-found; id={}", id.clone().value())
             }
         }
     }

@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n           INSERT INTO todos (id, name, description, is_public, alternative_name, started_at, scheduled_at, ended_at)\n           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)\n           RETURNING id\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Bool",
+        "Text",
+        "Timestamptz",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "71e0ef708d83a9c2c8f96e37854c1ad2f8d41ea3134c333c72cf80d5fccc9038"
+}

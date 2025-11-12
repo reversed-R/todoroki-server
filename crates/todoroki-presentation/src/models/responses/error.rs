@@ -32,6 +32,8 @@ enum ErrorResponseCode {
     UserAuthTokenVerificationError,
     #[serde(rename = "user-auth/not-verified")]
     UserNotVerified,
+    #[serde(rename = "user/not-found")]
+    UserNotFound,
 }
 
 impl From<ErrorCode> for ErrorResponse {
@@ -54,6 +56,7 @@ impl IntoResponse for ErrorResponse {
             ErrorResponseCode::UserRepositoryInternalError => StatusCode::INTERNAL_SERVER_ERROR,
             ErrorResponseCode::UserAuthTokenVerificationError => StatusCode::UNAUTHORIZED,
             ErrorResponseCode::UserNotVerified => StatusCode::UNAUTHORIZED,
+            ErrorResponseCode::UserNotFound => StatusCode::NOT_FOUND,
         };
 
         (status_code, Json(self)).into_response()
@@ -71,6 +74,7 @@ impl From<&ErrorCode> for ErrorResponseCode {
             ErrorCode::UserRepositoryInternalError(_) => Self::UserRepositoryInternalError,
             ErrorCode::UserAuthTokenVerificationError(_) => Self::UserAuthTokenVerificationError,
             ErrorCode::UserNotVerified => Self::UserNotVerified,
+            ErrorCode::UserNotFound(_) => Self::UserNotFound,
         }
     }
 }

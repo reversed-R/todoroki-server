@@ -1,7 +1,4 @@
-use crate::{
-    value_object,
-    value_objects::{datetime::DateTime, permission::Permission},
-};
+use crate::{value_object, value_objects::datetime::DateTime};
 use getset::Getters;
 use uuid::Uuid;
 
@@ -29,22 +26,6 @@ value_object!(UserEmail(String));
 pub enum UserRole {
     Owner,
     Contributor,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ClientRole {
-    Owner,
-    Contributor,
-    NotVerified,
-}
-
-impl From<UserRole> for ClientRole {
-    fn from(value: UserRole) -> Self {
-        match value {
-            UserRole::Owner => Self::Owner,
-            UserRole::Contributor => Self::Contributor,
-        }
-    }
 }
 
 impl UserId {
@@ -81,23 +62,5 @@ impl User {
             created_at: DateTime::now(),
             updated_at: DateTime::now(),
         }
-    }
-
-    pub fn has_permission(&self, permission: Permission) -> bool {
-        let client_role = ClientRole::from(self.role);
-
-        client_role.has_permission(permission)
-    }
-}
-
-#[derive(Debug, Clone, Getters)]
-pub struct AuthVerifiedUser {
-    #[getset(get = "pub")]
-    email: UserEmail,
-}
-
-impl AuthVerifiedUser {
-    pub fn new(email: UserEmail) -> Self {
-        Self { email }
     }
 }

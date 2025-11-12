@@ -79,7 +79,7 @@ impl UserRepository for PgUserRepository {
         let res = sqlx::query_as!(
             UserIdColumn,
             r#"
-           INSERT INTO users (id, name, email)
+           INSERT INTO users (id, role, name, email)
            VALUES ($1, $2, $3, $4)
            RETURNING id
             "#,
@@ -100,12 +100,12 @@ impl UserRepository for PgUserRepository {
         }
     }
 
-    async fn get_by_id(&self, id: UserId) -> Result<User, UserRepositoryError> {
-        let res = sqlx::query_as!(
+    async fn get_by_id(&self, id: UserId) -> Result<Option<User>, UserRepositoryError> {
+        let res: Result<Option<UserRow>, sqlx::Error> = sqlx::query_as!(
             UserRow,
             r#"SELECT
             users.id AS "id",
-            users.role AS "role",
+            users.role AS "role: UserRoleColumn",
             users.name AS "name",
             users.email AS "email",
             users.created_at AS "created_at",
@@ -114,33 +114,31 @@ impl UserRepository for PgUserRepository {
             FROM users WHERE id = $1"#,
             id.value()
         )
-        .fetch_one(&*self.db)
+        .fetch_optional(&*self.db)
         .await;
 
-        // TODO: check not found
-        res.map(User::from)
+        res.map(|opt_u| opt_u.map(User::from))
             .map_err(|e: sqlx::Error| UserRepositoryError::InternalError(e.to_string()))
     }
 
-    async fn get_by_email(&self, email: UserEmail) -> Result<User, UserRepositoryError> {
-        let res = sqlx::query_as!(
+    async fn get_by_email(&self, email: UserEmail) -> Result<Option<User>, UserRepositoryError> {
+        let res: Result<Option<UserRow>, sqlx::Error> = sqlx::query_as!(
             UserRow,
             r#"SELECT
             users.id AS "id",
-            users.role AS "role",
+            users.role AS "role: UserRoleColumn",
             users.name AS "name",
             users.email AS "email",
             users.created_at AS "created_at",
             users.updated_at AS "updated_at",
             users.deleted_at AS "deleted_at?"
             FROM users WHERE email = $1"#,
-            email.value()
+            email.clone().value()
         )
-        .fetch_one(&*self.db)
+        .fetch_optional(&*self.db)
         .await;
 
-        // TODO: check not found
-        res.map(User::from)
+        res.map(|opt_u| opt_u.map(User::from))
             .map_err(|e: sqlx::Error| UserRepositoryError::InternalError(e.to_string()))
     }
 }

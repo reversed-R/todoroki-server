@@ -1,7 +1,7 @@
-use todoroki_domain::entities::user::UserEmail;
+use todoroki_domain::entities::client::Client;
 
 pub trait ContextProvider {
-    fn user_email(&self) -> &Option<UserEmail>;
+    fn client(&self) -> &Client;
 
     fn config(&self) -> &impl ConfigProvider;
 }

@@ -12,7 +12,7 @@ pub enum UserRepositoryError {
 pub trait UserRepository: Send + Sync + 'static {
     async fn create(&self, user: User) -> Result<UserId, UserRepositoryError>;
 
-    async fn get_by_id(&self, id: UserId) -> Result<User, UserRepositoryError>;
+    async fn get_by_id(&self, id: UserId) -> Result<Option<User>, UserRepositoryError>;
 
-    async fn get_by_email(&self, email: UserEmail) -> Result<User, UserRepositoryError>;
+    async fn get_by_email(&self, email: UserEmail) -> Result<Option<User>, UserRepositoryError>;
 }

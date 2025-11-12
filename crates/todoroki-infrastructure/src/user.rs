@@ -1,8 +1,11 @@
 use crate::shared::postgresql::Postgresql;
 
-use sqlx::{prelude::FromRow, types::chrono};
+use sqlx::{
+    prelude::{FromRow, Type},
+    types::chrono,
+};
 use todoroki_domain::{
-    entities::user::{User, UserEmail, UserId, UserName},
+    entities::user::{User, UserEmail, UserId, UserName, UserRole},
     repositories::user::{UserRepository, UserRepositoryError},
     value_objects::datetime::DateTime,
 };
@@ -11,11 +14,37 @@ use uuid::Uuid;
 #[derive(FromRow)]
 struct UserRow {
     id: Uuid,
+    role: UserRoleColumn,
     name: String,
     email: String,
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
     deleted_at: Option<chrono::DateTime<chrono::Utc>>,
+}
+
+#[derive(Type)]
+#[sqlx(type_name = "user_role", rename_all = "snake_case")]
+pub enum UserRoleColumn {
+    Owner,
+    Contributor,
+}
+
+impl From<UserRole> for UserRoleColumn {
+    fn from(value: UserRole) -> Self {
+        match value {
+            UserRole::Owner => Self::Owner,
+            UserRole::Contributor => Self::Contributor,
+        }
+    }
+}
+
+impl From<UserRoleColumn> for UserRole {
+    fn from(value: UserRoleColumn) -> Self {
+        match value {
+            UserRoleColumn::Owner => Self::Owner,
+            UserRoleColumn::Contributor => Self::Contributor,
+        }
+    }
 }
 
 struct UserIdColumn {
@@ -26,6 +55,7 @@ impl From<UserRow> for User {
     fn from(value: UserRow) -> Self {
         Self::new(
             UserId::new(value.id),
+            UserRole::from(value.role),
             UserName::new(value.name),
             UserEmail::new(value.email),
             DateTime::new(value.created_at),
@@ -50,10 +80,11 @@ impl UserRepository for PgUserRepository {
             UserIdColumn,
             r#"
            INSERT INTO users (id, name, email)
-           VALUES ($1, $2, $3)
+           VALUES ($1, $2, $3, $4)
            RETURNING id
             "#,
             user.id().clone().value(),
+            UserRoleColumn::from(user.role().clone()) as UserRoleColumn,
             user.name().clone().value(),
             user.email().clone().value(),
         )
@@ -74,6 +105,7 @@ impl UserRepository for PgUserRepository {
             UserRow,
             r#"SELECT
             users.id AS "id",
+            users.role AS "role",
             users.name AS "name",
             users.email AS "email",
             users.created_at AS "created_at",
@@ -95,6 +127,7 @@ impl UserRepository for PgUserRepository {
             UserRow,
             r#"SELECT
             users.id AS "id",
+            users.role AS "role",
             users.name AS "name",
             users.email AS "email",
             users.created_at AS "created_at",

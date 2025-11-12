@@ -1,4 +1,7 @@
-use crate::{value_object, value_objects::datetime::DateTime};
+use crate::{
+    value_object,
+    value_objects::{datetime::DateTime, permission::Permission},
+};
 use getset::Getters;
 use uuid::Uuid;
 
@@ -6,6 +9,8 @@ use uuid::Uuid;
 pub struct User {
     #[getset(get = "pub")]
     id: UserId,
+    #[getset(get = "pub")]
+    role: UserRole,
     #[getset(get = "pub")]
     name: UserName,
     #[getset(get = "pub")]
@@ -20,6 +25,28 @@ value_object!(UserId(Uuid));
 value_object!(UserName(String));
 value_object!(UserEmail(String));
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum UserRole {
+    Owner,
+    Contributor,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ClientRole {
+    Owner,
+    Contributor,
+    NotVerified,
+}
+
+impl From<UserRole> for ClientRole {
+    fn from(value: UserRole) -> Self {
+        match value {
+            UserRole::Owner => Self::Owner,
+            UserRole::Contributor => Self::Contributor,
+        }
+    }
+}
+
 impl UserId {
     pub(crate) fn generate() -> Self {
         Self(Uuid::new_v4())
@@ -29,6 +56,7 @@ impl UserId {
 impl User {
     pub fn new(
         id: UserId,
+        role: UserRole,
         name: UserName,
         email: UserEmail,
         created_at: DateTime,
@@ -36,6 +64,7 @@ impl User {
     ) -> User {
         User {
             id,
+            role,
             name,
             email,
             created_at,
@@ -46,11 +75,18 @@ impl User {
     pub fn generate(name: UserName, email: UserEmail) -> Self {
         Self {
             id: UserId::generate(),
+            role: UserRole::Contributor,
             name,
             email,
             created_at: DateTime::now(),
             updated_at: DateTime::now(),
         }
+    }
+
+    pub fn has_permission(&self, permission: Permission) -> bool {
+        let client_role = ClientRole::from(self.role);
+
+        client_role.has_permission(permission)
     }
 }
 

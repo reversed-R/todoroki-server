@@ -1,5 +1,8 @@
+CREATE TYPE user_role AS ENUM ('owner', 'contributor');
+
 CREATE TABLE users (
   id UUID PRIMARY KEY NOT NULL,
+  role user_role NOT NULL DEFAULT 'contributor',
   name TEXT NOT NULL,
   email TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -1,6 +1,9 @@
 use crate::{
     value_object,
-    value_objects::{datetime::DateTime, error::ErrorCode},
+    value_objects::{
+        datetime::{DateTime, MonthlyTime, Time, WeeklyTime},
+        error::ErrorCode,
+    },
 };
 use getset::Getters;
 use uuid::Uuid;
@@ -53,6 +56,15 @@ impl TryFrom<String> for TodoId {
 pub enum TodoPublishment {
     Public,
     Private(Option<String>), // alternative name
+}
+
+#[derive(Debug, Clone)]
+pub enum TodoSchedule {
+    // (starts_at, ends_at)
+    Once(DateTime, DateTime),
+    Daily(Time, Time),
+    Weekly(WeeklyTime, WeeklyTime),
+    Monthly(MonthlyTime, MonthlyTime),
 }
 
 impl Todo {

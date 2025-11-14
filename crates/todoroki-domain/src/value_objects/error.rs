@@ -32,7 +32,7 @@ impl Display for ErrorCode {
             Self::TodoRepositoryInternalError(e) => {
                 write!(f, "todo/repository-internal-error; error={e}")
             }
-            Self::InvalidDateTimeFormat(s) => write!(f, "datetime/invalid-format; string={s}"),
+            Self::InvalidDateTimeFormat(s) => write!(f, "datetime/invalid-format; error={s}"),
             Self::InvalidUuidFormat(s) => write!(f, "uuid/invalid-format; string={s}"),
             Self::UserRepositoryInternalError(e) => {
                 write!(f, "user/repository-internal-error; error={e}")

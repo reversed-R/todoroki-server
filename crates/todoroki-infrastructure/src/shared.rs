@@ -1,8 +1,8 @@
 pub mod postgresql;
 
 use crate::{
-    shared::postgresql::Postgresql, todo::PgTodoRepository, user::PgUserRepository,
-    user_auth::FirebaseUserAuthRepository,
+    label::PgLabelRepository, shared::postgresql::Postgresql, todo::PgTodoRepository,
+    user::PgUserRepository, user_auth::FirebaseUserAuthRepository,
 };
 use postgresql::PostgresqlError;
 use todoroki_domain::repositories::Repositories;
@@ -17,6 +17,7 @@ pub enum DefaultRepositoriesError {
 
 pub struct DefaultRepositories {
     todo_repository: PgTodoRepository,
+    label_repository: PgLabelRepository,
     user_repository: PgUserRepository,
     user_auth_repository: FirebaseUserAuthRepository,
 }
@@ -27,6 +28,7 @@ impl DefaultRepositories {
 
         Ok(Self {
             todo_repository: PgTodoRepository::new(postgresql.clone()),
+            label_repository: PgLabelRepository::new(postgresql.clone()),
             user_repository: PgUserRepository::new(postgresql),
             user_auth_repository: FirebaseUserAuthRepository::new(jwk_url.to_string()),
         })
@@ -35,6 +37,7 @@ impl DefaultRepositories {
 
 impl Repositories for DefaultRepositories {
     type TodoRepositoryImpl = PgTodoRepository;
+    type LabelRepositoryImpl = PgLabelRepository;
     type UserRepositoryImpl = PgUserRepository;
     type UserAuthRepositoryImpl = FirebaseUserAuthRepository;
 
@@ -48,5 +51,9 @@ impl Repositories for DefaultRepositories {
 
     fn user_auth_repository(&self) -> &Self::UserAuthRepositoryImpl {
         &self.user_auth_repository
+    }
+
+    fn label_repository(&self) -> &Self::LabelRepositoryImpl {
+        &self.label_repository
     }
 }

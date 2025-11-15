@@ -7,7 +7,7 @@ const TODO_PRIVATE_DEFAULT_ALTERNATIVE_NAME: &str = "見せられないよ";
 const TODO_PRIVATE_DEFAULT_ALTERNATIVE_DESCRIPTION: &str = "見せられないよ";
 
 #[derive(Debug, Clone, Serialize, ToSchema)]
-pub struct Todo {
+pub struct TodoResponse {
     pub id: String,
     pub name: String,
     pub description: String,
@@ -19,7 +19,7 @@ pub struct Todo {
     pub deleted_at: Option<String>,
 }
 
-impl From<&entities::todo::Todo> for Todo {
+impl From<&entities::todo::Todo> for TodoResponse {
     fn from(value: &entities::todo::Todo) -> Self {
         Self {
             id: value.id().clone().value().as_hyphenated().to_string(),

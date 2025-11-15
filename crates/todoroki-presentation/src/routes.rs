@@ -1,6 +1,7 @@
 pub mod todo;
 pub mod user;
 pub mod health;
+pub mod label;
 
 use crate::{middlewares, modules::Modules};
 use todoroki_infrastructure::shared::DefaultRepositories;
@@ -32,6 +33,26 @@ pub fn router(modules: Arc<Modules<DefaultRepositories>>) -> Router {
         .nest("/todos", todo_opt_auth_routes)
         .nest("/todos", todo_auth_routes);
     
+    // label の作成/更新操作は常に認証を要する
+    let label_auth_routes = Router::new()
+        .route("/", post(label::handle_post))
+        .route_layer(axum::middleware::from_fn_with_state(
+            Arc::clone(&modules),
+            middlewares::auth::jwt_auth,
+        ));
+
+    // label の取得は必ずしも認証しなくても良い
+    let label_opt_auth_routes = Router::new()
+        .route("/", get(label::handle_get))
+        .route_layer(axum::middleware::from_fn_with_state(
+            Arc::clone(&modules),
+            middlewares::auth::optional_jwt_auth,
+        ));
+    
+    let label_routes = Router::new()
+        .nest("/labels", label_opt_auth_routes)
+        .nest("/labels", label_auth_routes);
+    
     // user の作成操作は常に認証を要する
     let user_auth_routes = Router::new()
         .route("/", post(user::handle_post))
@@ -47,6 +68,7 @@ pub fn router(modules: Arc<Modules<DefaultRepositories>>) -> Router {
     Router::new()
         .route("/health", get(health::handle_health))
         .merge(todo_routes)
+        .merge(label_routes)
         .merge(user_routes)
         .with_state(modules)
         .layer(
@@ -64,6 +86,7 @@ use crate::routes;
     tags(
         (name = "health", description = "APIの死活チェック"),
         (name = "todo", description = "Todo関連の操作"),
+        (name = "label", description = "ラベル関連の操作"),
         (name = "user", description = "ユーザー関連の操作"),
     ), 
     paths(
@@ -71,6 +94,8 @@ use crate::routes;
         routes::todo::handle_get,
         routes::todo::handle_post,
         routes::todo::handle_patch,
+        routes::label::handle_get,
+        routes::label::handle_post,
         routes::user::handle_post,
         routes::user::handle_get_me,
     )

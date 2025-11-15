@@ -5,13 +5,14 @@ use todoroki_domain::repositories::Repositories;
 use todoroki_infrastructure::shared::{DefaultRepositories, DefaultRepositoriesError};
 
 use thiserror::Error;
-use todoroki_use_case::{todo::TodoUseCase, user::UserUseCase};
+use todoroki_use_case::{label::LabelUseCase, todo::TodoUseCase, user::UserUseCase};
 
 pub struct Modules<R: Repositories> {
     config: Config,
     repositories: Arc<R>,
 
     todo_use_case: TodoUseCase<R>,
+    label_use_case: LabelUseCase<R>,
     user_use_case: UserUseCase<R>,
 }
 
@@ -26,6 +27,10 @@ impl<R: Repositories> Modules<R> {
 
     pub fn todo_use_case(&self) -> &TodoUseCase<R> {
         &self.todo_use_case
+    }
+
+    pub fn label_use_case(&self) -> &LabelUseCase<R> {
+        &self.label_use_case
     }
 
     pub fn user_use_case(&self) -> &UserUseCase<R> {
@@ -50,6 +55,7 @@ pub async fn default(config: Config) -> Result<Modules<DefaultRepositories>, Def
         config,
         repositories: Arc::clone(&repositories),
         todo_use_case: TodoUseCase::new(Arc::clone(&repositories)),
+        label_use_case: LabelUseCase::new(Arc::clone(&repositories)),
         user_use_case: UserUseCase::new(Arc::clone(&repositories)),
     })
 }

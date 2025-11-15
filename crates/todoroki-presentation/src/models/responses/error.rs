@@ -22,10 +22,8 @@ enum ErrorResponseCode {
     PermissionDenied,
     #[serde(rename = "todo/repository-internal-error")]
     TodoRepositoryInternalError,
-    #[serde(rename = "datetime/invalid-format")]
-    InvalidDateTimeFormat,
-    #[serde(rename = "uuid/invalid-format")]
-    InvalidUuidFormat,
+    #[serde(rename = "label/repository-internal-error")]
+    LabelRepositoryInternalError,
     #[serde(rename = "user/repository-internal-error")]
     UserRepositoryInternalError,
     #[serde(rename = "user-auth/token-verification-error")]
@@ -34,6 +32,12 @@ enum ErrorResponseCode {
     UserNotVerified,
     #[serde(rename = "user/not-found")]
     UserNotFound,
+    #[serde(rename = "datetime/invalid-format")]
+    InvalidDateTimeFormat,
+    #[serde(rename = "uuid/invalid-format")]
+    InvalidUuidFormat,
+    #[serde(rename = "color/invalid-format")]
+    InvalidColorFormat,
 }
 
 impl From<ErrorCode> for ErrorResponse {
@@ -51,12 +55,14 @@ impl IntoResponse for ErrorResponse {
             ErrorResponseCode::TodoNotFound => StatusCode::NOT_FOUND,
             ErrorResponseCode::PermissionDenied => StatusCode::FORBIDDEN,
             ErrorResponseCode::TodoRepositoryInternalError => StatusCode::INTERNAL_SERVER_ERROR,
-            ErrorResponseCode::InvalidDateTimeFormat => StatusCode::BAD_REQUEST,
-            ErrorResponseCode::InvalidUuidFormat => StatusCode::BAD_REQUEST,
+            ErrorResponseCode::LabelRepositoryInternalError => StatusCode::INTERNAL_SERVER_ERROR,
             ErrorResponseCode::UserRepositoryInternalError => StatusCode::INTERNAL_SERVER_ERROR,
             ErrorResponseCode::UserAuthTokenVerificationError => StatusCode::UNAUTHORIZED,
             ErrorResponseCode::UserNotVerified => StatusCode::UNAUTHORIZED,
             ErrorResponseCode::UserNotFound => StatusCode::NOT_FOUND,
+            ErrorResponseCode::InvalidDateTimeFormat => StatusCode::BAD_REQUEST,
+            ErrorResponseCode::InvalidUuidFormat => StatusCode::BAD_REQUEST,
+            ErrorResponseCode::InvalidColorFormat => StatusCode::BAD_REQUEST,
         };
 
         (status_code, Json(self)).into_response()
@@ -69,12 +75,14 @@ impl From<&ErrorCode> for ErrorResponseCode {
             ErrorCode::TodoNotFound(_) => Self::TodoNotFound,
             ErrorCode::PermissionDenied(_) => Self::PermissionDenied,
             ErrorCode::TodoRepositoryInternalError(_) => Self::TodoRepositoryInternalError,
-            ErrorCode::InvalidDateTimeFormat(_) => Self::InvalidDateTimeFormat,
-            ErrorCode::InvalidUuidFormat(_) => Self::InvalidUuidFormat,
+            ErrorCode::LabelRepositoryInternalError(_) => Self::LabelRepositoryInternalError,
             ErrorCode::UserRepositoryInternalError(_) => Self::UserRepositoryInternalError,
             ErrorCode::UserAuthTokenVerificationError(_) => Self::UserAuthTokenVerificationError,
             ErrorCode::UserNotVerified => Self::UserNotVerified,
             ErrorCode::UserNotFound(_) => Self::UserNotFound,
+            ErrorCode::InvalidDateTimeFormat(_) => Self::InvalidDateTimeFormat,
+            ErrorCode::InvalidUuidFormat(_) => Self::InvalidUuidFormat,
+            ErrorCode::InvalidColorFormat(_) => Self::InvalidColorFormat,
         }
     }
 }

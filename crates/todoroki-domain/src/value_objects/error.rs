@@ -5,7 +5,9 @@ use thiserror::Error;
 
 use crate::{
     entities::{todo::TodoId, user::UserId},
-    repositories::{todo::TodoRepositoryError, user::UserRepositoryError},
+    repositories::{
+        label::LabelRepositoryError, todo::TodoRepositoryError, user::UserRepositoryError,
+    },
     value_objects::permission::Permission,
 };
 
@@ -16,12 +18,15 @@ pub enum ErrorCode {
     #[error(transparent)]
     TodoRepositoryInternalError(#[from] TodoRepositoryError),
     #[error(transparent)]
+    LabelRepositoryInternalError(#[from] LabelRepositoryError),
+    #[error(transparent)]
     UserRepositoryInternalError(#[from] UserRepositoryError),
-    InvalidDateTimeFormat(String),
-    InvalidUuidFormat(String),
     UserAuthTokenVerificationError(String),
     UserNotVerified,
     UserNotFound(UserId),
+    InvalidDateTimeFormat(String),
+    InvalidUuidFormat(String),
+    InvalidColorFormat(String),
 }
 
 impl Display for ErrorCode {
@@ -32,8 +37,9 @@ impl Display for ErrorCode {
             Self::TodoRepositoryInternalError(e) => {
                 write!(f, "todo/repository-internal-error; error={e}")
             }
-            Self::InvalidDateTimeFormat(s) => write!(f, "datetime/invalid-format; error={s}"),
-            Self::InvalidUuidFormat(s) => write!(f, "uuid/invalid-format; string={s}"),
+            Self::LabelRepositoryInternalError(e) => {
+                write!(f, "label/repository-internal-error; error={e}")
+            }
             Self::UserRepositoryInternalError(e) => {
                 write!(f, "user/repository-internal-error; error={e}")
             }
@@ -46,6 +52,9 @@ impl Display for ErrorCode {
             Self::UserNotFound(id) => {
                 write!(f, "user/not-found; id={}", id.clone().value())
             }
+            Self::InvalidDateTimeFormat(s) => write!(f, "datetime/invalid-format; error={s}"),
+            Self::InvalidUuidFormat(s) => write!(f, "uuid/invalid-format; string={s}"),
+            Self::InvalidColorFormat(s) => write!(f, "color/invalid-format; string={s}"),
         }
     }
 }

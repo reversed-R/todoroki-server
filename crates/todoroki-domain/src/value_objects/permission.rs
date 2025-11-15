@@ -24,6 +24,10 @@ pub enum Permission {
     // ReadPrivateDoit(Doit), // name や description に private ガードがかけられているものを読めるか。 Doit の作成者自身である場合はContributorも読める
     // UpdateDoit(Doit), //  Doit の作成者自身である場合はContributorも更新できる
     DeleteDoit,
+    CreateLabel,
+    ReadLabel,
+    UpdateLabel,
+    DeleteLabel,
 }
 
 impl<'a> ContextedClient<'a> {
@@ -33,22 +37,30 @@ impl<'a> ContextedClient<'a> {
                 UserRole::Owner => true,
                 UserRole::Contributor => matches!(
                     permission,
-                    Permission::ReadTodo | Permission::CreateDoit | Permission::ReadDoit
+                    Permission::ReadTodo
+                        | Permission::CreateDoit
+                        | Permission::ReadDoit
+                        | Permission::ReadLabel
                 ),
             },
             Client::Unregistered(email) => {
-                matches!(permission, Permission::ReadTodo | Permission::ReadDoit)
-                    || if let Permission::CreateUser(u) = permission.clone() {
-                        (u.role() == &UserRole::Contributor
-                            || (u.email().clone().value()
-                                == self.default_owner_email().to_owned().to_owned().value())
-                                && u.role() == &UserRole::Owner)
-                            && u.email().clone().value() == email.clone().value()
-                    } else {
-                        false
-                    }
+                matches!(
+                    permission,
+                    Permission::ReadTodo | Permission::ReadDoit | Permission::ReadLabel
+                ) || if let Permission::CreateUser(u) = permission.clone() {
+                    (u.role() == &UserRole::Contributor
+                        || (u.email().clone().value()
+                            == self.default_owner_email().to_owned().to_owned().value())
+                            && u.role() == &UserRole::Owner)
+                        && u.email().clone().value() == email.clone().value()
+                } else {
+                    false
+                }
             }
-            Client::Unverified => matches!(permission, Permission::ReadTodo | Permission::ReadDoit),
+            Client::Unverified => matches!(
+                permission,
+                Permission::ReadTodo | Permission::ReadDoit | Permission::ReadLabel
+            ),
         };
 
         if has {
@@ -72,6 +84,10 @@ impl Display for Permission {
             Self::DeleteDoit => write!(f, "delete-doit"),
             Self::CreateUser(_) => write!(f, "create-user"),
             Self::ReadUser => write!(f, "read-user"),
+            Self::CreateLabel => write!(f, "create-label"),
+            Self::ReadLabel => write!(f, "read-label"),
+            Self::UpdateLabel => write!(f, "update-label"),
+            Self::DeleteLabel => write!(f, "delete-label"),
         }
     }
 }

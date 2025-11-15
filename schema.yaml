@@ -27,6 +27,76 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
       security:
       - {}
+  /labels:
+    get:
+      tags:
+      - label
+      operationId: getLabels
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LabelResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security: []
+    post:
+      tags:
+      - label
+      operationId: postLabel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LabelRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - jwt_token: []
   /todos:
     get:
       tags:
@@ -40,7 +110,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Todo'
+                  $ref: '#/components/schemas/TodoResponse'
         '400':
           description: Bad Request
           content:
@@ -70,7 +140,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Todo'
+              $ref: '#/components/schemas/TodoRequest'
         required: true
       responses:
         '201':
@@ -233,11 +303,51 @@ components:
       - todo/not-found
       - permission/denied
       - todo/repository-internal-error
-      - datetime/invalid-format
-      - uuid/invalid-format
+      - label/repository-internal-error
       - user/repository-internal-error
       - user-auth/token-verification-error
       - user-auth/not-verified
+      - user/not-found
+      - datetime/invalid-format
+      - uuid/invalid-format
+      - color/invalid-format
+    LabelRequest:
+      type: object
+      required:
+      - name
+      - description
+      properties:
+        color:
+          type:
+          - string
+          - 'null'
+        description:
+          type: string
+        name:
+          type: string
+    LabelResponse:
+      type: object
+      required:
+      - id
+      - name
+      - description
+      - created_at
+      - updated_at
+      properties:
+        color:
+          type:
+          - string
+          - 'null'
+        created_at:
+          type: string
+        description:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        updated_at:
+          type: string
     SuccessResponse:
       type: object
       required:
@@ -245,7 +355,7 @@ components:
       properties:
         message:
           type: string
-    Todo:
+    TodoRequest:
       type: object
       required:
       - name
@@ -266,6 +376,41 @@ components:
           type:
           - string
           - 'null'
+    TodoResponse:
+      type: object
+      required:
+      - id
+      - name
+      - description
+      - created_at
+      - updated_at
+      properties:
+        created_at:
+          type: string
+        deleted_at:
+          type:
+          - string
+          - 'null'
+        description:
+          type: string
+        ended_at:
+          type:
+          - string
+          - 'null'
+        id:
+          type: string
+        name:
+          type: string
+        scheduled_at:
+          type:
+          - string
+          - 'null'
+        started_at:
+          type:
+          - string
+          - 'null'
+        updated_at:
+          type: string
     TodoUpdateCommand:
       type: object
       properties:
@@ -326,5 +471,7 @@ tags:
   description: APIの死活チェック
 - name: todo
   description: Todo関連の操作
+- name: label
+  description: ラベル関連の操作
 - name: user
   description: ユーザー関連の操作

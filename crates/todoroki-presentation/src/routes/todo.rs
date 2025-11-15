@@ -22,7 +22,7 @@ use todoroki_infrastructure::shared::DefaultRepositories;
     operation_id = "getTodos",
     tag = "todo",
     responses(
-        (status = 200, description = "OK", body = Vec<responses::todo::Todo>),
+        (status = 200, description = "OK", body = Vec<responses::todo::TodoResponse>),
         (status = 400, description = "Bad Request", body = ErrorResponse),
         (status = 422, description = "Unprocessable Entity", body = ErrorResponse),
         (status = 500, description = "Internal Server Error", body = ErrorResponse),
@@ -39,8 +39,8 @@ pub async fn handle_get(
         Ok(todos) => Ok(Json(
             todos
                 .iter()
-                .map(responses::todo::Todo::from)
-                .collect::<Vec<responses::todo::Todo>>(),
+                .map(responses::todo::TodoResponse::from)
+                .collect::<Vec<responses::todo::TodoResponse>>(),
         )),
         Err(e) => Err(e.into()),
     }
@@ -62,7 +62,7 @@ pub async fn handle_get(
 pub async fn handle_post(
     State(modules): State<Arc<Modules<DefaultRepositories>>>,
     Extension(ctx): Extension<Context>,
-    Json(raw_todo): Json<requests::todo::Todo>,
+    Json(raw_todo): Json<requests::todo::TodoRequest>,
 ) -> Result<impl IntoResponse, ErrorResponse> {
     let todo = raw_todo.try_into()?;
 

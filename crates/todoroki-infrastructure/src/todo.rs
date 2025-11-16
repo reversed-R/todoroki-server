@@ -126,49 +126,54 @@ impl TodoRepository for PgTodoRepository {
     }
 
     async fn update(&self, cmd: TodoUpdateCommand) -> Result<(), TodoRepositoryError> {
-        let mut builder = QueryBuilder::new("UPDATE todos SET ");
-
-        let mut sep = builder.separated(", ");
-
-        if let Some(name) = cmd.name() {
-            sep.push("name = ");
-            sep.push_bind(name.clone().value());
+        if cmd.is_nothing_todo() {
+            return Ok(());
         }
 
-        if let Some(description) = cmd.description() {
-            sep.push("description = ");
-            sep.push_bind(description.clone().value());
-        }
-
-        if let Some(scheduled_at) = cmd.scheduled_at() {
-            sep.push("scheduled_at = ");
-            sep.push_bind(scheduled_at.clone().map(|t| t.value()));
-        }
-
-        // すでに開始済みまたは終了済みの際は列の更新をしない
-        if let Some(status) = cmd.status() {
-            match status {
-                TodoUpdateProgressStatus::OnProgress => {
-                    sep.push("started_at = CASE WHEN started_at IS NULL THEN ");
-                    sep.push_bind(chrono::Utc::now());
-                    sep.push(" ELSE started_at END");
-                }
-                TodoUpdateProgressStatus::Completed => {
-                    sep.push("ended_at = CASE WHEN ended_at IS NULL THEN ");
-                    sep.push_bind(chrono::Utc::now());
-                    sep.push(" ELSE ended_at END");
-                }
-            }
-        }
-
-        builder.push(" WHERE id = ");
-        builder.push_bind(cmd.id().clone().value());
-
-        builder
-            .build()
-            .execute(&*self.db)
-            .await
-            .map_err(|e| TodoRepositoryError::InternalError(e.to_string()))?;
+        let res = sqlx::query!(
+            r#"
+            UPDATE todos
+            SET
+                name = COALESCE($2, name),
+                description = COALESCE($3, description),
+                is_public = COALESCE($4, is_public),
+                alternative_name = COALESCE($5, alternative_name),
+                started_at = COALESCE(started_at, $6),
+                ended_at = COALESCE(ended_at, $7),
+                scheduled_at = COALESCE($8, scheduled_at)
+            WHERE id = $1
+            "#,
+            cmd.id().clone().value(),
+            cmd.name().clone().map(|n| n.value()),
+            cmd.description().clone().map(|d| d.value()),
+            cmd.is_public()
+                .clone()
+                .map(|is_public| matches!(is_public, TodoPublishment::Public)),
+            cmd.is_public()
+                .clone()
+                .map(|is_public| match is_public {
+                    TodoPublishment::Public => None,
+                    TodoPublishment::Private(alt) => alt.clone(),
+                })
+                .flatten(),
+            if matches!(cmd.status(), Some(TodoUpdateProgressStatus::OnProgress)) {
+                Some(chrono::Utc::now())
+            } else {
+                None
+            },
+            if matches!(cmd.status(), Some(TodoUpdateProgressStatus::Completed)) {
+                Some(chrono::Utc::now())
+            } else {
+                None
+            },
+            cmd.deadlined_at()
+                .clone()
+                .map(|opt_t| opt_t.map(|t| t.value()))
+                .flatten(),
+        )
+        .execute(&*self.db)
+        .await
+        .map_err(|e: sqlx::Error| TodoRepositoryError::InternalError(e.to_string()))?;
 
         Ok(())
     }

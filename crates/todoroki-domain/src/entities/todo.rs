@@ -138,7 +138,7 @@ pub struct TodoUpdateCommand {
     #[getset(get = "pub")]
     is_public: Option<TodoPublishment>,
     #[getset(get = "pub")]
-    scheduled_at: Option<Option<DateTime>>,
+    deadlined_at: Option<Option<DateTime>>,
     #[getset(get = "pub")]
     status: Option<TodoUpdateProgressStatus>,
 }
@@ -155,7 +155,7 @@ impl TodoUpdateCommand {
         name: Option<TodoName>,
         description: Option<TodoDescription>,
         is_public: Option<TodoPublishment>,
-        scheduled_at: Option<Option<DateTime>>,
+        deadlined_at: Option<Option<DateTime>>,
         status: Option<TodoUpdateProgressStatus>,
     ) -> Self {
         Self {
@@ -163,8 +163,16 @@ impl TodoUpdateCommand {
             name,
             description,
             is_public,
-            scheduled_at,
+            deadlined_at,
             status,
         }
+    }
+
+    pub fn is_nothing_todo(&self) -> bool {
+        self.name.is_none()
+            && self.description.is_none()
+            && self.is_public.is_none()
+            && self.deadlined_at.is_none()
+            && self.status.is_none()
     }
 }

@@ -4,7 +4,7 @@ use axum::{
     Extension, Json,
 };
 use std::sync::Arc;
-use todoroki_domain::entities::todo::TodoId;
+use todoroki_domain::{entities::todo::TodoId, value_objects::error::ErrorCode};
 
 use crate::{
     context::Context,
@@ -64,7 +64,13 @@ pub async fn handle_post(
     Extension(ctx): Extension<Context>,
     Json(raw_todo): Json<requests::todo::TodoRequest>,
 ) -> Result<impl IntoResponse, ErrorResponse> {
-    let todo = raw_todo.try_into()?;
+    let labels = modules
+        .label_use_case()
+        .list(&ctx)
+        .await
+        .map_err(ErrorCode::from)?;
+
+    let todo = raw_todo.try_into_with_labels(labels)?;
 
     let res = modules.todo_use_case().create(todo, &ctx).await;
 
@@ -102,7 +108,7 @@ pub async fn handle_patch(
     let res = modules.todo_use_case().update(cmd, &ctx).await;
 
     match res {
-        Ok(id) => Ok(SuccessResponse::new(format!("todo/updated",))),
+        Ok(()) => Ok(SuccessResponse::new(format!("todo/updated"))),
         Err(e) => Err(e.into()),
     }
 }

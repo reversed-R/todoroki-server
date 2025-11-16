@@ -30,7 +30,7 @@ use todoroki_infrastructure::shared::DefaultRepositories;
     security(("jwt_token" = [])),
 )]
 pub async fn handle_get_me(
-    State(modules): State<Arc<Modules<DefaultRepositories>>>,
+    State(_modules): State<Arc<Modules<DefaultRepositories>>>,
     Extension(ctx): Extension<Context>,
 ) -> Result<impl IntoResponse, ErrorResponse> {
     match ctx.client().client() {

@@ -3,6 +3,8 @@ use utoipa::ToSchema;
 
 use todoroki_domain::entities::{self, todo::TodoPublishment};
 
+use crate::models::responses::label::LabelResponse;
+
 const TODO_PRIVATE_DEFAULT_ALTERNATIVE_NAME: &str = "見せられないよ";
 const TODO_PRIVATE_DEFAULT_ALTERNATIVE_DESCRIPTION: &str = "見せられないよ";
 
@@ -11,12 +13,12 @@ pub struct TodoResponse {
     pub id: String,
     pub name: String,
     pub description: String,
+    pub labels: Vec<LabelResponse>,
     pub started_at: Option<String>,
-    pub scheduled_at: Option<String>,
+    pub deadlined_at: Option<String>,
     pub ended_at: Option<String>,
     pub created_at: String,
     pub updated_at: String,
-    pub deleted_at: Option<String>,
 }
 
 impl From<&entities::todo::Todo> for TodoResponse {
@@ -35,12 +37,16 @@ impl From<&entities::todo::Todo> for TodoResponse {
             } else {
                 TODO_PRIVATE_DEFAULT_ALTERNATIVE_DESCRIPTION.to_string()
             },
+            labels: value
+                .labels()
+                .into_iter()
+                .map(LabelResponse::from)
+                .collect(),
             started_at: value.started_at().clone().map(|t| t.value().to_rfc3339()),
-            scheduled_at: value.scheduled_at().clone().map(|t| t.value().to_rfc3339()),
+            deadlined_at: value.deadlined_at().clone().map(|t| t.value().to_rfc3339()),
             ended_at: value.ended_at().clone().map(|t| t.value().to_rfc3339()),
             created_at: value.created_at().clone().value().to_rfc3339(),
             updated_at: value.updated_at().clone().value().to_rfc3339(),
-            deleted_at: value.deleted_at().clone().map(|t| t.value().to_rfc3339()),
         }
     }
 }

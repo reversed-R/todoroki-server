@@ -9,8 +9,8 @@ use todoroki_domain::{
 };
 use uuid::Uuid;
 
-#[derive(FromRow)]
-struct LabelRow {
+#[derive(FromRow, serde::Deserialize)]
+pub(super) struct LabelRow {
     id: Uuid,
     name: String,
     description: String,
@@ -107,7 +107,7 @@ impl LabelRepository for PgLabelRepository {
         res.map_err(|e: sqlx::Error| LabelRepositoryError::InternalError(e.to_string()))
     }
 
-    async fn delete_by_id(&self, id: LabelId) -> Result<(), LabelRepositoryError> {
+    async fn delete_by_id(&self, _id: LabelId) -> Result<(), LabelRepositoryError> {
         todo!()
     }
 }

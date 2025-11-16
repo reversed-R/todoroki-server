@@ -15,11 +15,12 @@ edition = "2021"
 axum = "0.8.4"
 tokio = { version = "1.45.0", features = [ "full" ] }
 serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.145"
 getset = "0.1.5"
-uuid = { version = "1.18.1", features = [ "v4" ] }
-chrono = "0.4.41"
+uuid = { version = "1.18.1", features = [ "v4", "serde" ] }
+chrono = { version = "0.4.41", features = [ "serde" ] }
 thiserror = "2.0.12"
-sqlx = { version = "0.8.5", features = [ 
+sqlx = { version = "0.8.6", features = [ 
   "runtime-tokio",
   "postgres",
   "uuid",

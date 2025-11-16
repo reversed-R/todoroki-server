@@ -1,11 +1,14 @@
-use crate::shared::postgresql::Postgresql;
+use crate::{label::LabelRow, shared::postgresql::Postgresql};
 
-use futures_util::{StreamExt, TryStreamExt};
+use futures_util::TryStreamExt;
 use sqlx::{prelude::FromRow, types::chrono, QueryBuilder};
 use todoroki_domain::{
-    entities::todo::{
-        Todo, TodoDescription, TodoId, TodoName, TodoPublishment, TodoUpdateCommand,
-        TodoUpdateProgressStatus,
+    entities::{
+        label::Label,
+        todo::{
+            Todo, TodoDescription, TodoId, TodoName, TodoPublishment, TodoUpdateCommand,
+            TodoUpdateProgressStatus,
+        },
     },
     repositories::todo::{TodoRepository, TodoRepositoryError},
     value_objects::datetime::DateTime,
@@ -25,15 +28,24 @@ struct TodoRow {
     created_at: chrono::DateTime<chrono::Utc>,
     updated_at: chrono::DateTime<chrono::Utc>,
     deleted_at: Option<chrono::DateTime<chrono::Utc>>,
+    labels: serde_json::Value,
 }
 
 struct TodoIdColumn {
     id: Uuid,
 }
 
-impl From<TodoRow> for Todo {
-    fn from(value: TodoRow) -> Self {
-        Self::new(
+impl TryFrom<TodoRow> for Todo {
+    type Error = TodoRepositoryError;
+
+    fn try_from(value: TodoRow) -> Result<Self, Self::Error> {
+        let labels: Vec<Label> = serde_json::from_value::<Vec<LabelRow>>(value.labels)
+            .map_err(|e| TodoRepositoryError::InternalError(e.to_string()))?
+            .into_iter()
+            .map(Label::from)
+            .collect();
+
+        Ok(Self::new(
             TodoId::new(value.id),
             TodoName::new(value.name),
             TodoDescription::new(value.description),
@@ -42,13 +54,14 @@ impl From<TodoRow> for Todo {
             } else {
                 TodoPublishment::Private(value.alternative_name)
             },
+            labels,
             value.started_at.map(DateTime::new),
             value.scheduled_at.map(DateTime::new),
             value.ended_at.map(DateTime::new),
             DateTime::new(value.created_at),
             DateTime::new(value.updated_at),
             value.deleted_at.map(DateTime::new),
-        )
+        ))
     }
 }
 
@@ -64,6 +77,12 @@ impl PgTodoRepository {
 
 impl TodoRepository for PgTodoRepository {
     async fn create(&self, todo: Todo) -> Result<TodoId, TodoRepositoryError> {
+        let mut tx = self
+            .db
+            .begin()
+            .await
+            .map_err(|e| TodoRepositoryError::InternalError(e.to_string()))?;
+
         let res = sqlx::query_as!(
             TodoIdColumn,
             r#"
@@ -80,19 +99,30 @@ impl TodoRepository for PgTodoRepository {
                 TodoPublishment::Private(alt) => alt.clone()
             },
             todo.started_at().clone().map(|t| t.value()),
-            todo.scheduled_at().clone().map(|t| t.value()),
+            todo.deadlined_at().clone().map(|t| t.value()),
             todo.ended_at().clone().map(|t| t.value()),
         )
-        .fetch_one(&*self.db)
-        .await;
+        .fetch_one(&mut *tx)
+        .await.map_err(|e| {
+            TodoRepositoryError::InternalError(e.to_string())
+        })?;
 
-        match res {
-            Ok(id_column) => Ok(TodoId::new(id_column.id)),
-            Err(e) => match e.as_database_error() {
-                Some(e) => Err(TodoRepositoryError::InternalError(e.message().to_string())),
-                _ => Err(TodoRepositoryError::InternalError(e.to_string())),
-            },
+        for label in todo.labels() {
+            sqlx::query!(
+                r#"INSERT INTO todo_labels (todo_id, label_id) VALUES ($1, $2)"#,
+                res.id,
+                label.id().clone().value(),
+            )
+            .execute(&mut *tx)
+            .await
+            .map_err(|e| TodoRepositoryError::InternalError(e.to_string()))?;
         }
+
+        tx.commit()
+            .await
+            .map_err(|e| TodoRepositoryError::InternalError(e.to_string()))?;
+
+        Ok(TodoId::new(res.id))
     }
 
     async fn update(&self, cmd: TodoUpdateCommand) -> Result<(), TodoRepositoryError> {
@@ -157,19 +187,41 @@ impl TodoRepository for PgTodoRepository {
             todos.ended_at AS "ended_at?",
             todos.created_at AS "created_at",
             todos.updated_at AS "updated_at",
-            todos.deleted_at AS "deleted_at?"
+            todos.deleted_at AS "deleted_at?",
+            COALESCE(
+                json_agg(
+                    json_build_object(
+                        'id', l.id,
+                        'name', l.name,
+                        'description', l.description,
+                        'created_at', l.created_at,
+                        'updated_at', l.updated_at,
+                        'deleted_at', l.deleted_at
+                    )
+                ) FILTER (WHERE l.id IS NOT NULL),
+                '[]'
+            ) AS "labels"
             FROM todos
+            LEFT JOIN todo_labels tl ON todos.id = tl.todo_id
+            LEFT JOIN labels l ON tl.label_id = l.id
+            GROUP BY todos.id
             ORDER BY todos.updated_at DESC"#
         )
         .fetch(&*self.db)
-        .map(|row| Ok(Todo::from(row?)))
-        .try_collect()
-        .await;
+        .and_then(|row| async move {
+            Todo::try_from(row).map_err(|e| sqlx::Error::ColumnDecode {
+                index: "labels".into(),
+                source: Box::new(e),
+            })
+        })
+        .try_collect::<Vec<Todo>>()
+        .await
+        .map_err(|e: sqlx::Error| TodoRepositoryError::InternalError(e.to_string()))?;
 
-        res.map_err(|e: sqlx::Error| TodoRepositoryError::InternalError(e.to_string()))
+        Ok(res)
     }
 
-    async fn delete_by_id(&self, id: TodoId) -> Result<(), TodoRepositoryError> {
+    async fn delete_by_id(&self, _id: TodoId) -> Result<(), TodoRepositoryError> {
         todo!()
     }
 }

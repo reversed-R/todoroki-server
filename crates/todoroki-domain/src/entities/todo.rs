@@ -1,4 +1,5 @@
 use crate::{
+    entities::label::Label,
     value_object,
     value_objects::{
         datetime::{DateTime, MonthlyTime, Time, WeeklyTime},
@@ -19,9 +20,11 @@ pub struct Todo {
     #[getset(get = "pub")]
     is_public: TodoPublishment,
     #[getset(get = "pub")]
+    labels: Vec<Label>,
+    #[getset(get = "pub")]
     started_at: Option<DateTime>,
     #[getset(get = "pub")]
-    scheduled_at: Option<DateTime>,
+    deadlined_at: Option<DateTime>,
     #[getset(get = "pub")]
     ended_at: Option<DateTime>,
     #[getset(get = "pub")]
@@ -73,8 +76,9 @@ impl Todo {
         name: TodoName,
         description: TodoDescription,
         is_public: TodoPublishment,
+        labels: Vec<Label>,
         started_at: Option<DateTime>,
-        scheduled_at: Option<DateTime>,
+        deadlined_at: Option<DateTime>,
         ended_at: Option<DateTime>,
         created_at: DateTime,
         updated_at: DateTime,
@@ -85,8 +89,9 @@ impl Todo {
             name,
             description,
             is_public,
+            labels,
             started_at,
-            scheduled_at,
+            deadlined_at,
             ended_at,
             created_at,
             updated_at,
@@ -98,15 +103,17 @@ impl Todo {
         name: TodoName,
         description: TodoDescription,
         is_public: TodoPublishment,
-        scheduled_at: Option<DateTime>,
+        labels: Vec<Label>,
+        deadlined_at: Option<DateTime>,
     ) -> Self {
         Self {
             id: TodoId::generate(),
             name,
             description,
             is_public,
+            labels,
             started_at: None,
-            scheduled_at,
+            deadlined_at,
             ended_at: None,
             created_at: DateTime::now(),
             updated_at: DateTime::now(),

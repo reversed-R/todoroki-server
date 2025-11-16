@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::Deserialize;
 use todoroki_domain::{
     entities::{
@@ -15,12 +17,38 @@ pub struct TodoRequest {
     pub is_public: bool,
     pub alternative_name: Option<String>,
     pub scheduled_at: Option<String>,
+    pub labels: Vec<TodoLabel>,
 }
 
-impl TryInto<entities::todo::Todo> for TodoRequest {
-    type Error = ErrorCode;
+#[derive(Debug, Clone, Deserialize, ToSchema)]
+pub struct TodoLabel {
+    pub id: String,
+}
 
-    fn try_into(self) -> Result<entities::todo::Todo, Self::Error> {
+impl TodoRequest {
+    pub fn try_into_with_labels(
+        self,
+        labels: Vec<entities::label::Label>,
+    ) -> Result<entities::todo::Todo, ErrorCode> {
+        let exists_labels: HashMap<uuid::Uuid, entities::label::Label> = labels
+            .into_iter()
+            .map(|l| (l.id().clone().value(), l))
+            .collect();
+
+        let requested_labels: Vec<entities::label::Label> = self
+            .labels
+            .into_iter()
+            .map(|l| uuid::Uuid::parse_str(&l.id).map_err(|_| ErrorCode::InvalidUuidFormat(l.id)))
+            .collect::<Result<Vec<uuid::Uuid>, ErrorCode>>()?
+            .into_iter()
+            .map(|id| {
+                exists_labels
+                    .get(&id)
+                    .cloned()
+                    .ok_or(ErrorCode::LabelNotFound(entities::label::LabelId::new(id)))
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
         Ok(entities::todo::Todo::generate(
             TodoName::new(self.name),
             TodoDescription::new(self.description),
@@ -29,6 +57,7 @@ impl TryInto<entities::todo::Todo> for TodoRequest {
             } else {
                 TodoPublishment::Private(self.alternative_name)
             },
+            requested_labels,
             self.scheduled_at
                 .map(|t| DateTime::try_from(t))
                 .transpose()?,

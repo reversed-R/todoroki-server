@@ -18,6 +18,8 @@ pub struct ErrorResponse {
 enum ErrorResponseCode {
     #[serde(rename = "todo/not-found")]
     TodoNotFound,
+    #[serde(rename = "label/not-found")]
+    LabelNotFound,
     #[serde(rename = "permission/denied")]
     PermissionDenied,
     #[serde(rename = "todo/repository-internal-error")]
@@ -53,6 +55,7 @@ impl IntoResponse for ErrorResponse {
     fn into_response(self) -> Response {
         let status_code = match self.code {
             ErrorResponseCode::TodoNotFound => StatusCode::NOT_FOUND,
+            ErrorResponseCode::LabelNotFound => StatusCode::NOT_FOUND,
             ErrorResponseCode::PermissionDenied => StatusCode::FORBIDDEN,
             ErrorResponseCode::TodoRepositoryInternalError => StatusCode::INTERNAL_SERVER_ERROR,
             ErrorResponseCode::LabelRepositoryInternalError => StatusCode::INTERNAL_SERVER_ERROR,
@@ -73,6 +76,7 @@ impl From<&ErrorCode> for ErrorResponseCode {
     fn from(value: &ErrorCode) -> Self {
         match value {
             ErrorCode::TodoNotFound(_) => Self::TodoNotFound,
+            ErrorCode::LabelNotFound(_) => Self::LabelNotFound,
             ErrorCode::PermissionDenied(_) => Self::PermissionDenied,
             ErrorCode::TodoRepositoryInternalError(_) => Self::TodoRepositoryInternalError,
             ErrorCode::LabelRepositoryInternalError(_) => Self::LabelRepositoryInternalError,

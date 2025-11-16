@@ -301,6 +301,7 @@ components:
       type: string
       enum:
       - todo/not-found
+      - label/not-found
       - permission/denied
       - todo/repository-internal-error
       - label/repository-internal-error
@@ -355,12 +356,20 @@ components:
       properties:
         message:
           type: string
+    TodoLabel:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: string
     TodoRequest:
       type: object
       required:
       - name
       - description
       - is_public
+      - labels
       properties:
         alternative_name:
           type:
@@ -370,6 +379,10 @@ components:
           type: string
         is_public:
           type: boolean
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/TodoLabel'
         name:
           type: string
         scheduled_at:
@@ -382,12 +395,13 @@ components:
       - id
       - name
       - description
+      - labels
       - created_at
       - updated_at
       properties:
         created_at:
           type: string
-        deleted_at:
+        deadlined_at:
           type:
           - string
           - 'null'
@@ -399,12 +413,12 @@ components:
           - 'null'
         id:
           type: string
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/LabelResponse'
         name:
           type: string
-        scheduled_at:
-          type:
-          - string
-          - 'null'
         started_at:
           type:
           - string

@@ -194,6 +194,7 @@ impl TodoRepository for PgTodoRepository {
                         'id', l.id,
                         'name', l.name,
                         'description', l.description,
+                        'color', l.color,
                         'created_at', l.created_at,
                         'updated_at', l.updated_at,
                         'deleted_at', l.deleted_at

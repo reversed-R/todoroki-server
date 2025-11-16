@@ -394,11 +394,16 @@ components:
       required:
       - id
       - name
+      - is_public
       - description
       - labels
       - created_at
       - updated_at
       properties:
+        alternative_name:
+          type:
+          - string
+          - 'null'
         created_at:
           type: string
         deadlined_at:
@@ -413,6 +418,8 @@ components:
           - 'null'
         id:
           type: string
+        is_public:
+          type: boolean
         labels:
           type: array
           items:

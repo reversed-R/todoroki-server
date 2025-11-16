@@ -5,6 +5,7 @@ use axum::{
 };
 use std::sync::Arc;
 use todoroki_domain::{entities::todo::TodoId, value_objects::error::ErrorCode};
+use todoroki_use_case::shared::ContextProvider;
 
 use crate::{
     context::Context,
@@ -39,7 +40,9 @@ pub async fn handle_get(
         Ok(todos) => Ok(Json(
             todos
                 .iter()
-                .map(responses::todo::TodoResponse::from)
+                .map(|t| {
+                    responses::todo::TodoResponse::from_with_ownership(t, ctx.client().client())
+                })
                 .collect::<Vec<responses::todo::TodoResponse>>(),
         )),
         Err(e) => Err(e.into()),

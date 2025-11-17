@@ -6,7 +6,8 @@ use thiserror::Error;
 use crate::{
     entities::{label::LabelId, todo::TodoId, user::UserId},
     repositories::{
-        label::LabelRepositoryError, todo::TodoRepositoryError, user::UserRepositoryError,
+        doit::DoitRepositoryError, label::LabelRepositoryError, todo::TodoRepositoryError,
+        user::UserRepositoryError,
     },
     value_objects::permission::Permission,
 };
@@ -15,9 +16,11 @@ use crate::{
 pub enum ErrorCode {
     TodoNotFound(TodoId),
     LabelNotFound(LabelId),
-    PermissionDenied(Permission),
+    PermissionDenied(Box<Permission>),
     #[error(transparent)]
     TodoRepositoryInternalError(#[from] TodoRepositoryError),
+    #[error(transparent)]
+    DoitRepositoryInternalError(#[from] DoitRepositoryError),
     #[error(transparent)]
     LabelRepositoryInternalError(#[from] LabelRepositoryError),
     #[error(transparent)]
@@ -38,6 +41,9 @@ impl Display for ErrorCode {
             Self::PermissionDenied(perm) => write!(f, "permission/denied; permission={perm}"),
             Self::TodoRepositoryInternalError(e) => {
                 write!(f, "todo/repository-internal-error; error={e}")
+            }
+            Self::DoitRepositoryInternalError(e) => {
+                write!(f, "doit/repository-internal-error; error={e}")
             }
             Self::LabelRepositoryInternalError(e) => {
                 write!(f, "label/repository-internal-error; error={e}")

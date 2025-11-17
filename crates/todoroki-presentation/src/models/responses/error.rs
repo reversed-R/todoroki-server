@@ -24,6 +24,8 @@ enum ErrorResponseCode {
     PermissionDenied,
     #[serde(rename = "todo/repository-internal-error")]
     TodoRepositoryInternalError,
+    #[serde(rename = "doit/repository-internal-error")]
+    DoitRepositoryInternalError,
     #[serde(rename = "label/repository-internal-error")]
     LabelRepositoryInternalError,
     #[serde(rename = "user/repository-internal-error")]
@@ -58,6 +60,7 @@ impl IntoResponse for ErrorResponse {
             ErrorResponseCode::LabelNotFound => StatusCode::NOT_FOUND,
             ErrorResponseCode::PermissionDenied => StatusCode::FORBIDDEN,
             ErrorResponseCode::TodoRepositoryInternalError => StatusCode::INTERNAL_SERVER_ERROR,
+            ErrorResponseCode::DoitRepositoryInternalError => StatusCode::INTERNAL_SERVER_ERROR,
             ErrorResponseCode::LabelRepositoryInternalError => StatusCode::INTERNAL_SERVER_ERROR,
             ErrorResponseCode::UserRepositoryInternalError => StatusCode::INTERNAL_SERVER_ERROR,
             ErrorResponseCode::UserAuthTokenVerificationError => StatusCode::UNAUTHORIZED,
@@ -79,6 +82,7 @@ impl From<&ErrorCode> for ErrorResponseCode {
             ErrorCode::LabelNotFound(_) => Self::LabelNotFound,
             ErrorCode::PermissionDenied(_) => Self::PermissionDenied,
             ErrorCode::TodoRepositoryInternalError(_) => Self::TodoRepositoryInternalError,
+            ErrorCode::DoitRepositoryInternalError(_) => Self::DoitRepositoryInternalError,
             ErrorCode::LabelRepositoryInternalError(_) => Self::LabelRepositoryInternalError,
             ErrorCode::UserRepositoryInternalError(_) => Self::UserRepositoryInternalError,
             ErrorCode::UserAuthTokenVerificationError(_) => Self::UserAuthTokenVerificationError,

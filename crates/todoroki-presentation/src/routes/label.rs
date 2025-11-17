@@ -33,7 +33,7 @@ pub async fn handle_get(
     match res {
         Ok(labels) => Ok(Json(
             labels
-                .iter()
+                .into_iter()
                 .map(responses::label::LabelResponse::from)
                 .collect::<Vec<responses::label::LabelResponse>>(),
         )),

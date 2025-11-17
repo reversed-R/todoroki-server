@@ -1,3 +1,4 @@
+pub mod doit;
 pub mod label;
 pub mod shared;
 pub mod todo;

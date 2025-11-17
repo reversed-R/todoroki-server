@@ -24,7 +24,7 @@ pub struct TodoResponse {
 }
 
 impl TodoResponse {
-    pub fn from_with_ownership(value: &entities::todo::Todo, client: &Client) -> Self {
+    pub fn from_with_ownership(value: entities::todo::Todo, client: &Client) -> Self {
         let is_owner = if let Client::User(u) = client {
             matches!(u.role(), UserRole::Owner)
         } else {
@@ -59,6 +59,7 @@ impl TodoResponse {
             },
             labels: value
                 .labels()
+                .clone()
                 .into_iter()
                 .map(LabelResponse::from)
                 .collect(),

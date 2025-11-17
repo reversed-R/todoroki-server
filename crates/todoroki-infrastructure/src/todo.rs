@@ -1,7 +1,7 @@
 use crate::{label::LabelRow, shared::postgresql::Postgresql};
 
 use futures_util::TryStreamExt;
-use sqlx::{prelude::FromRow, types::chrono, QueryBuilder};
+use sqlx::{prelude::FromRow, types::chrono};
 use todoroki_domain::{
     entities::{
         label::Label,
@@ -130,7 +130,7 @@ impl TodoRepository for PgTodoRepository {
             return Ok(());
         }
 
-        let res = sqlx::query!(
+        sqlx::query!(
             r#"
             UPDATE todos
             SET

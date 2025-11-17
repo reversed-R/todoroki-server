@@ -3,6 +3,7 @@ use std::fmt::Display;
 use crate::{
     entities::{
         client::{Client, ContextedClient},
+        doit::Doit,
         user::{User, UserRole},
     },
     value_objects::error::ErrorCode,
@@ -21,8 +22,8 @@ pub enum Permission {
     DeleteTodo,
     CreateDoit,
     ReadDoit,
-    // ReadPrivateDoit(Doit), // name や description に private ガードがかけられているものを読めるか。 Doit の作成者自身である場合はContributorも読める
-    // UpdateDoit(Doit), //  Doit の作成者自身である場合はContributorも更新できる
+    ReadPrivateDoit(Doit), // name や description に private ガードがかけられているものを読めるか。 Doit の作成者自身である場合はContributorも読める
+    UpdateDoit(Doit),      //  Doit の作成者自身である場合はContributorも更新できる
     DeleteDoit,
     CreateLabel,
     ReadLabel,
@@ -66,7 +67,7 @@ impl<'a> ContextedClient<'a> {
         if has {
             Ok(())
         } else {
-            Err(ErrorCode::PermissionDenied(permission))
+            Err(ErrorCode::PermissionDenied(Box::new(permission)))
         }
     }
 }
@@ -81,6 +82,8 @@ impl Display for Permission {
             Self::DeleteTodo => write!(f, "delete-todo"),
             Self::CreateDoit => write!(f, "create-doit"),
             Self::ReadDoit => write!(f, "read-doit"),
+            Self::ReadPrivateDoit(_) => write!(f, "read-private-doit"),
+            Self::UpdateDoit(_) => write!(f, "update-doit"),
             Self::DeleteDoit => write!(f, "delete-doit"),
             Self::CreateUser(_) => write!(f, "create-user"),
             Self::ReadUser => write!(f, "read-user"),

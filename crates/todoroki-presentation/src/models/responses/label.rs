@@ -13,8 +13,8 @@ pub struct LabelResponse {
     pub updated_at: String,
 }
 
-impl From<&entities::label::Label> for LabelResponse {
-    fn from(value: &entities::label::Label) -> Self {
+impl From<entities::label::Label> for LabelResponse {
+    fn from(value: entities::label::Label) -> Self {
         Self {
             id: value.id().clone().value().as_hyphenated().to_string(),
             name: value.name().clone().value(),

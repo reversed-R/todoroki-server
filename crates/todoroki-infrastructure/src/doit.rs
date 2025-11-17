@@ -166,6 +166,49 @@ impl DoitRepository for PgDoitRepository {
         Ok(())
     }
 
+    async fn get_by_id(&self, id: DoitId) -> Result<Option<Doit>, DoitRepositoryError> {
+        let res: Result<Option<DoitRow>, sqlx::Error> = sqlx::query_as!(
+            DoitRow,
+            r#"SELECT
+            doits.id AS "id",
+            doits.name AS "name",
+            doits.description AS "description",
+            doits.is_public AS "is_public",
+            doits.alternative_name AS "alternative_name",
+            doits.affects_to AS "affects_to?",
+            doits.deadlined_at AS "deadlined_at?",
+            doits.created_at AS "created_at",
+            doits.updated_at AS "updated_at",
+            doits.deleted_at AS "deleted_at?",
+            doits.created_by AS "created_by",
+            COALESCE(
+                json_agg(
+                    json_build_object(
+                        'id', l.id,
+                        'name', l.name,
+                        'description', l.description,
+                        'color', l.color,
+                        'created_at', l.created_at,
+                        'updated_at', l.updated_at,
+                        'deleted_at', l.deleted_at
+                    )
+                ) FILTER (WHERE l.id IS NOT NULL),
+                '[]'
+            ) AS "labels"
+            FROM doits
+            LEFT JOIN doit_labels tl ON doits.id = tl.doit_id
+            LEFT JOIN labels l ON tl.label_id = l.id
+            GROUP BY doits.id
+            ORDER BY doits.updated_at DESC"#
+        )
+        .fetch_optional(&*self.db)
+        .await;
+
+        res.map_err(|e: sqlx::Error| DoitRepositoryError::InternalError(e.to_string()))?
+            .map(Doit::try_from)
+            .transpose()
+    }
+
     async fn list(&self) -> Result<Vec<Doit>, DoitRepositoryError> {
         let res = sqlx::query_as!(
             DoitRow,

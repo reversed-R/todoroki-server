@@ -14,7 +14,7 @@ pub trait DoitRepository: Send + Sync + 'static {
 
     async fn update(&self, cmd: DoitUpdateCommand) -> Result<(), DoitRepositoryError>;
 
-    // async fn get_by_id(&self, id: DoitId) -> Result<Option<Doit>, DoitRepositoryError>;
+    async fn get_by_id(&self, id: DoitId) -> Result<Option<Doit>, DoitRepositoryError>;
 
     async fn list(&self) -> Result<Vec<Doit>, DoitRepositoryError>;
 

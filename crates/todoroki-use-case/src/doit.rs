@@ -5,7 +5,10 @@ pub mod operations;
 use std::sync::Arc;
 use thiserror::Error;
 
-use todoroki_domain::repositories::{doit::DoitRepositoryError, Repositories};
+use todoroki_domain::{
+    entities::doit::DoitId,
+    repositories::{doit::DoitRepositoryError, Repositories},
+};
 
 pub struct DoitUseCase<R: Repositories> {
     repositories: Arc<R>,
@@ -15,6 +18,8 @@ pub struct DoitUseCase<R: Repositories> {
 pub enum DoitUseCaseError {
     #[error(transparent)]
     DoitRepositoryError(#[from] DoitRepositoryError),
+    #[error("Doit Not Found: {0:?}")]
+    DoitNotFound(DoitId),
 }
 
 impl<R: Repositories> DoitUseCase<R> {

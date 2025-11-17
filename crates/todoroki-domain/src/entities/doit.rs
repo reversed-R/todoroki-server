@@ -150,6 +150,7 @@ impl DoitUpdateCommand {
         self.name.is_none()
             && self.description.is_none()
             && self.is_public.is_none()
+            && self.affects_to.is_none()
             && self.deadlined_at.is_none()
     }
 }

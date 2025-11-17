@@ -40,21 +40,19 @@ impl<R: Repositories> DoitUseCase<R> {
         cmd: DoitUpdateCommand,
         ctx: &impl ContextProvider,
     ) -> Result<(), ErrorCode> {
-        todo!()
+        let doit = self
+            .repositories
+            .doit_repository()
+            .get_by_id(cmd.id().clone())
+            .await
+            .map_err(DoitUseCaseError::DoitRepositoryError)?
+            .ok_or(DoitUseCaseError::DoitNotFound(cmd.id().clone()))?;
 
-        // let doit = self
-        //     .repositories
-        //     .doit_repository()
-        //     .get_by_id(cmd.id().clone())
-        //     .await
-        //     .map_err(DoitUseCaseError::DoitRepositoryError)
-        //     .map_err(|e| e.into())?;
-        //
-        // ctx.client().has_permission(Permission::UpdateDoit(doit))?;
-        //
-        // let res = self.repositories.doit_repository().update(cmd).await;
-        //
-        // res.map_err(DoitUseCaseError::DoitRepositoryError)
-        //     .map_err(|e| e.into())
+        ctx.client().has_permission(Permission::UpdateDoit(doit))?;
+
+        let res = self.repositories.doit_repository().update(cmd).await;
+
+        res.map_err(DoitUseCaseError::DoitRepositoryError)
+            .map_err(|e| e.into())
     }
 }

@@ -4,7 +4,7 @@ use std::fmt::Display;
 use thiserror::Error;
 
 use crate::{
-    entities::{label::LabelId, todo::TodoId, user::UserId},
+    entities::{doit::DoitId, label::LabelId, todo::TodoId, user::UserId},
     repositories::{
         doit::DoitRepositoryError, label::LabelRepositoryError, todo::TodoRepositoryError,
         user::UserRepositoryError,
@@ -15,6 +15,7 @@ use crate::{
 #[derive(Debug, Clone, Error)]
 pub enum ErrorCode {
     TodoNotFound(TodoId),
+    DoitNotFound(DoitId),
     LabelNotFound(LabelId),
     PermissionDenied(Box<Permission>),
     #[error(transparent)]
@@ -37,6 +38,7 @@ impl Display for ErrorCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::TodoNotFound(id) => write!(f, "todo/not-found; id={}", id.clone().value()),
+            Self::DoitNotFound(id) => write!(f, "doit/not-found; id={}", id.clone().value()),
             Self::LabelNotFound(id) => write!(f, "label/not-found; id={}", id.clone().value()),
             Self::PermissionDenied(perm) => write!(f, "permission/denied; permission={perm}"),
             Self::TodoRepositoryInternalError(e) => {

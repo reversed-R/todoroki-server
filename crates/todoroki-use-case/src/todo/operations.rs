@@ -1,6 +1,6 @@
 use crate::{
     shared::ContextProvider,
-    todo::{TodoUseCase, TodoUseCaseError},
+    todo::{dto::TodoDto, TodoUseCase, TodoUseCaseError},
 };
 
 use todoroki_domain::{
@@ -23,13 +23,16 @@ impl<R: Repositories> TodoUseCase<R> {
             .map_err(|e| e.into())
     }
 
-    pub async fn list(&self, ctx: &impl ContextProvider) -> Result<Vec<Todo>, ErrorCode> {
+    pub async fn list(&self, ctx: &impl ContextProvider) -> Result<Vec<TodoDto>, ErrorCode> {
         ctx.client().has_permission(Permission::ReadTodo)?;
 
         let res = self.repositories.todo_repository().list().await;
 
         res.map_err(TodoUseCaseError::TodoRepositoryError)
-            .map_err(|e| e.into())
+            .map_err(ErrorCode::from)?
+            .into_iter()
+            .map(|d| TodoDto::try_from_with_permission(d, ctx.client()))
+            .collect()
     }
 
     pub async fn update(

@@ -1,12 +1,10 @@
 use serde::Serialize;
+use todoroki_use_case::todo::dto::TodoDto;
 use utoipa::ToSchema;
 
-use todoroki_domain::entities::{self, client::Client, todo::TodoPublishment, user::UserRole};
+use todoroki_domain::{entities, value_objects::datetime::DateTime};
 
 use crate::models::responses::label::LabelResponse;
-
-const TODO_PRIVATE_DEFAULT_ALTERNATIVE_NAME: &str = "見せられないよ";
-const TODO_PRIVATE_DEFAULT_ALTERNATIVE_DESCRIPTION: &str = "見せられないよ";
 
 #[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct TodoResponse {
@@ -16,58 +14,80 @@ pub struct TodoResponse {
     pub description: String,
     pub alternative_name: Option<String>,
     pub labels: Vec<LabelResponse>,
-    pub started_at: Option<String>,
+    pub schedules: Vec<TodoSchedule>,
     pub deadlined_at: Option<String>,
+    pub started_at: Option<String>,
     pub ended_at: Option<String>,
     pub created_at: String,
     pub updated_at: String,
 }
 
-impl TodoResponse {
-    pub fn from_with_ownership(value: entities::todo::Todo, client: &Client) -> Self {
-        let is_owner = if let Client::User(u) = client {
-            matches!(u.role(), UserRole::Owner)
-        } else {
-            false
-        };
+#[derive(Debug, Clone, Serialize, ToSchema)]
+pub struct TodoSchedule {
+    pub interval: TodoScheduleInterval,
+    pub starts_at: String,
+    pub ends_at: String,
+}
 
+#[derive(Debug, Clone, Serialize, ToSchema)]
+pub enum TodoScheduleInterval {
+    #[serde(rename = "once")]
+    Once,
+    #[serde(rename = "daily")]
+    Daily,
+    #[serde(rename = "weekly")]
+    Weekly,
+    #[serde(rename = "monthly")]
+    Monthly,
+}
+
+impl From<entities::todo::TodoSchedule> for TodoSchedule {
+    fn from(value: entities::todo::TodoSchedule) -> Self {
+        match value {
+            entities::todo::TodoSchedule::Once(s, e) => Self {
+                interval: TodoScheduleInterval::Once,
+                starts_at: s.value().to_rfc3339(),
+                ends_at: e.value().to_rfc3339(),
+            },
+            entities::todo::TodoSchedule::Daily(s, e) => Self {
+                interval: TodoScheduleInterval::Daily,
+                starts_at: DateTime::from(s).value().to_rfc3339(),
+                ends_at: DateTime::from(e).value().to_rfc3339(),
+            },
+            entities::todo::TodoSchedule::Weekly(s, e) => Self {
+                interval: TodoScheduleInterval::Weekly,
+                starts_at: DateTime::from(s).value().to_rfc3339(),
+                ends_at: DateTime::from(e).value().to_rfc3339(),
+            },
+            entities::todo::TodoSchedule::Monthly(s, e) => Self {
+                interval: TodoScheduleInterval::Monthly,
+                starts_at: DateTime::from(s).value().to_rfc3339(),
+                ends_at: DateTime::from(e).value().to_rfc3339(),
+            },
+        }
+    }
+}
+
+impl From<TodoDto> for TodoResponse {
+    fn from(value: TodoDto) -> Self {
         Self {
-            id: value.id().clone().value().as_hyphenated().to_string(),
-            name: if is_owner {
-                value.name().clone().value()
-            } else {
-                match value.is_public() {
-                    TodoPublishment::Public => value.name().clone().value(),
-                    TodoPublishment::Private(alt) => match alt {
-                        Some(name) => name.to_string(),
-                        None => TODO_PRIVATE_DEFAULT_ALTERNATIVE_NAME.to_string(),
-                    },
-                }
-            },
-            is_public: matches!(value.is_public(), TodoPublishment::Public),
-            description: if is_owner {
-                value.description().clone().value()
-            } else if let TodoPublishment::Public = value.is_public() {
-                value.description().clone().value()
-            } else {
-                TODO_PRIVATE_DEFAULT_ALTERNATIVE_DESCRIPTION.to_string()
-            },
-            alternative_name: if let TodoPublishment::Private(alt) = value.is_public() {
-                alt.clone()
-            } else {
-                None
-            },
-            labels: value
-                .labels()
+            id: value.id.as_hyphenated().to_string(),
+            name: value.name,
+            is_public: value.is_public,
+            description: value.description,
+            alternative_name: value.alternative_name,
+            labels: value.labels.into_iter().map(LabelResponse::from).collect(),
+            schedules: value
+                .schedules
                 .clone()
                 .into_iter()
-                .map(LabelResponse::from)
+                .map(TodoSchedule::from)
                 .collect(),
-            started_at: value.started_at().clone().map(|t| t.value().to_rfc3339()),
-            deadlined_at: value.deadlined_at().clone().map(|t| t.value().to_rfc3339()),
-            ended_at: value.ended_at().clone().map(|t| t.value().to_rfc3339()),
-            created_at: value.created_at().clone().value().to_rfc3339(),
-            updated_at: value.updated_at().clone().value().to_rfc3339(),
+            started_at: value.started_at.clone().map(|t| t.value().to_rfc3339()),
+            ended_at: value.ended_at.clone().map(|t| t.value().to_rfc3339()),
+            deadlined_at: value.deadlined_at.clone().map(|t| t.value().to_rfc3339()),
+            created_at: value.created_at.clone().value().to_rfc3339(),
+            updated_at: value.updated_at.clone().value().to_rfc3339(),
         }
     }
 }

@@ -198,8 +198,9 @@ impl DoitRepository for PgDoitRepository {
             FROM doits
             LEFT JOIN doit_labels tl ON doits.id = tl.doit_id
             LEFT JOIN labels l ON tl.label_id = l.id
-            GROUP BY doits.id
-            ORDER BY doits.updated_at DESC"#
+            WHERE doits.id = $1
+            GROUP BY doits.id"#,
+            id.value()
         )
         .fetch_optional(&*self.db)
         .await;

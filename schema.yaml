@@ -582,6 +582,7 @@ components:
       - description
       - is_public
       - labels
+      - schedules
       properties:
         alternative_name:
           type:
@@ -601,6 +602,10 @@ components:
           type:
           - string
           - 'null'
+        schedules:
+          type: array
+          items:
+            $ref: '#/components/schemas/TodoScheduleRequest'
     TodoResponse:
       type: object
       required:
@@ -609,6 +614,7 @@ components:
       - is_public
       - description
       - labels
+      - schedules
       - created_at
       - updated_at
       properties:
@@ -638,11 +644,55 @@ components:
             $ref: '#/components/schemas/LabelResponse'
         name:
           type: string
+        schedules:
+          type: array
+          items:
+            $ref: '#/components/schemas/TodoScheduleResponse'
         started_at:
           type:
           - string
           - 'null'
         updated_at:
+          type: string
+    TodoScheduleIntervalRequest:
+      type: string
+      enum:
+      - once
+      - daily
+      - weekly
+      - monthly
+    TodoScheduleIntervalResponse:
+      type: string
+      enum:
+      - once
+      - daily
+      - weekly
+      - monthly
+    TodoScheduleRequest:
+      type: object
+      required:
+      - interval
+      - starts_at
+      - ends_at
+      properties:
+        ends_at:
+          type: string
+        interval:
+          $ref: '#/components/schemas/TodoScheduleIntervalRequest'
+        starts_at:
+          type: string
+    TodoScheduleResponse:
+      type: object
+      required:
+      - interval
+      - starts_at
+      - ends_at
+      properties:
+        ends_at:
+          type: string
+        interval:
+          $ref: '#/components/schemas/TodoScheduleIntervalResponse'
+        starts_at:
           type: string
     TodoUpdateCommand:
       type: object

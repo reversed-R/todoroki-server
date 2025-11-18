@@ -14,7 +14,7 @@ pub struct TodoResponse {
     pub description: String,
     pub alternative_name: Option<String>,
     pub labels: Vec<LabelResponse>,
-    pub schedules: Vec<TodoSchedule>,
+    pub schedules: Vec<TodoScheduleResponse>,
     pub deadlined_at: Option<String>,
     pub started_at: Option<String>,
     pub ended_at: Option<String>,
@@ -23,14 +23,14 @@ pub struct TodoResponse {
 }
 
 #[derive(Debug, Clone, Serialize, ToSchema)]
-pub struct TodoSchedule {
-    pub interval: TodoScheduleInterval,
+pub struct TodoScheduleResponse {
+    pub interval: TodoScheduleIntervalResponse,
     pub starts_at: String,
     pub ends_at: String,
 }
 
 #[derive(Debug, Clone, Serialize, ToSchema)]
-pub enum TodoScheduleInterval {
+pub enum TodoScheduleIntervalResponse {
     #[serde(rename = "once")]
     Once,
     #[serde(rename = "daily")]
@@ -41,26 +41,26 @@ pub enum TodoScheduleInterval {
     Monthly,
 }
 
-impl From<entities::todo::TodoSchedule> for TodoSchedule {
+impl From<entities::todo::TodoSchedule> for TodoScheduleResponse {
     fn from(value: entities::todo::TodoSchedule) -> Self {
         match value {
             entities::todo::TodoSchedule::Once(s, e) => Self {
-                interval: TodoScheduleInterval::Once,
+                interval: TodoScheduleIntervalResponse::Once,
                 starts_at: s.value().to_rfc3339(),
                 ends_at: e.value().to_rfc3339(),
             },
             entities::todo::TodoSchedule::Daily(s, e) => Self {
-                interval: TodoScheduleInterval::Daily,
+                interval: TodoScheduleIntervalResponse::Daily,
                 starts_at: DateTime::from(s).value().to_rfc3339(),
                 ends_at: DateTime::from(e).value().to_rfc3339(),
             },
             entities::todo::TodoSchedule::Weekly(s, e) => Self {
-                interval: TodoScheduleInterval::Weekly,
+                interval: TodoScheduleIntervalResponse::Weekly,
                 starts_at: DateTime::from(s).value().to_rfc3339(),
                 ends_at: DateTime::from(e).value().to_rfc3339(),
             },
             entities::todo::TodoSchedule::Monthly(s, e) => Self {
-                interval: TodoScheduleInterval::Monthly,
+                interval: TodoScheduleIntervalResponse::Monthly,
                 starts_at: DateTime::from(s).value().to_rfc3339(),
                 ends_at: DateTime::from(e).value().to_rfc3339(),
             },
@@ -81,7 +81,7 @@ impl From<TodoDto> for TodoResponse {
                 .schedules
                 .clone()
                 .into_iter()
-                .map(TodoSchedule::from)
+                .map(TodoScheduleResponse::from)
                 .collect(),
             started_at: value.started_at.clone().map(|t| t.value().to_rfc3339()),
             ended_at: value.ended_at.clone().map(|t| t.value().to_rfc3339()),

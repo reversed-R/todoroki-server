@@ -22,6 +22,8 @@ pub struct Todo {
     #[getset(get = "pub")]
     labels: Vec<Label>,
     #[getset(get = "pub")]
+    schedules: Vec<TodoSchedule>,
+    #[getset(get = "pub")]
     started_at: Option<DateTime>,
     #[getset(get = "pub")]
     deadlined_at: Option<DateTime>,
@@ -77,6 +79,7 @@ impl Todo {
         description: TodoDescription,
         is_public: TodoPublishment,
         labels: Vec<Label>,
+        schedules: Vec<TodoSchedule>,
         started_at: Option<DateTime>,
         deadlined_at: Option<DateTime>,
         ended_at: Option<DateTime>,
@@ -90,6 +93,7 @@ impl Todo {
             description,
             is_public,
             labels,
+            schedules,
             started_at,
             deadlined_at,
             ended_at,
@@ -104,6 +108,7 @@ impl Todo {
         description: TodoDescription,
         is_public: TodoPublishment,
         labels: Vec<Label>,
+        schedules: Vec<TodoSchedule>,
         deadlined_at: Option<DateTime>,
     ) -> Self {
         Self {
@@ -112,6 +117,7 @@ impl Todo {
             description,
             is_public,
             labels,
+            schedules,
             started_at: None,
             deadlined_at,
             ended_at: None,

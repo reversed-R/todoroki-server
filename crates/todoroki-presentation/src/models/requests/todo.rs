@@ -6,7 +6,10 @@ use todoroki_domain::{
         self,
         todo::{TodoDescription, TodoId, TodoName, TodoPublishment},
     },
-    value_objects::{datetime::DateTime, error::ErrorCode},
+    value_objects::{
+        datetime::{DateTime, MonthlyTime, Time, WeeklyTime},
+        error::ErrorCode,
+    },
 };
 use utoipa::ToSchema;
 
@@ -18,11 +21,56 @@ pub struct TodoRequest {
     pub alternative_name: Option<String>,
     pub scheduled_at: Option<String>,
     pub labels: Vec<TodoLabel>,
+    pub schedules: Vec<TodoSchedule>,
 }
 
 #[derive(Debug, Clone, Deserialize, ToSchema)]
 pub struct TodoLabel {
     pub id: String,
+}
+
+#[derive(Debug, Clone, Deserialize, ToSchema)]
+pub struct TodoSchedule {
+    pub interval: TodoScheduleInterval,
+    pub starts_at: String,
+    pub ends_at: String,
+}
+
+#[derive(Debug, Clone, Deserialize, ToSchema)]
+pub enum TodoScheduleInterval {
+    #[serde(rename = "once")]
+    Once,
+    #[serde(rename = "daily")]
+    Daily,
+    #[serde(rename = "weekly")]
+    Weekly,
+    #[serde(rename = "monthly")]
+    Monthly,
+}
+
+impl TryFrom<TodoSchedule> for entities::todo::TodoSchedule {
+    type Error = ErrorCode;
+
+    fn try_from(value: TodoSchedule) -> Result<Self, Self::Error> {
+        match value.interval {
+            TodoScheduleInterval::Once => Ok(entities::todo::TodoSchedule::Once(
+                DateTime::try_from(value.starts_at)?,
+                DateTime::try_from(value.ends_at)?,
+            )),
+            TodoScheduleInterval::Daily => Ok(entities::todo::TodoSchedule::Daily(
+                Time::try_from(DateTime::try_from(value.starts_at)?)?,
+                Time::try_from(DateTime::try_from(value.ends_at)?)?,
+            )),
+            TodoScheduleInterval::Weekly => Ok(entities::todo::TodoSchedule::Weekly(
+                WeeklyTime::try_from(DateTime::try_from(value.starts_at)?)?,
+                WeeklyTime::try_from(DateTime::try_from(value.ends_at)?)?,
+            )),
+            TodoScheduleInterval::Monthly => Ok(entities::todo::TodoSchedule::Monthly(
+                MonthlyTime::try_from(DateTime::try_from(value.starts_at)?)?,
+                MonthlyTime::try_from(DateTime::try_from(value.ends_at)?)?,
+            )),
+        }
+    }
 }
 
 impl TodoRequest {
@@ -58,6 +106,10 @@ impl TodoRequest {
                 TodoPublishment::Private(self.alternative_name)
             },
             requested_labels,
+            self.schedules
+                .into_iter()
+                .map(|s| entities::todo::TodoSchedule::try_from(s))
+                .collect::<Result<Vec<_>, _>>()?,
             self.scheduled_at
                 .map(|t| DateTime::try_from(t))
                 .transpose()?,

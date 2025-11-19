@@ -47,9 +47,13 @@ struct TodoScheduleRow {
 #[derive(sqlx::Type, serde::Deserialize)]
 #[sqlx(type_name = "todo_schedule_interval", rename_all = "snake_case")]
 pub enum TodoScheduleInterval {
+    #[serde(rename = "once")]
     Once,
+    #[serde(rename = "daily")]
     Daily,
+    #[serde(rename = "weekly")]
     Weekly,
+    #[serde(rename = "monthly")]
     Monthly,
 }
 

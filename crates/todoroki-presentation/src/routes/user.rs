@@ -59,7 +59,11 @@ pub async fn handle_post(
     Json(raw_user): Json<requests::user::UserRequest>,
 ) -> Result<impl IntoResponse, ErrorResponse> {
     let email = match ctx.client().client() {
-        Client::User(_) => todo!(), // user already exists for the email
+        Client::User(user) => {
+            return Err(ErrorResponse::from(ErrorCode::UserAlreadyExistsForEmail(
+                user.email().clone(),
+            )))
+        }
         Client::Unverified => return Err(ErrorResponse::from(ErrorCode::UserNotVerified)),
         Client::Unregistered(email) => email,
     };

@@ -38,6 +38,8 @@ enum ErrorResponseCode {
     UserNotVerified,
     #[serde(rename = "user/not-found")]
     UserNotFound,
+    #[serde(rename = "user/already-exists")]
+    UserAlreadyExists,
     #[serde(rename = "datetime/invalid-format")]
     InvalidDateTimeFormat,
     #[serde(rename = "uuid/invalid-format")]
@@ -69,6 +71,7 @@ impl IntoResponse for ErrorResponse {
             ErrorResponseCode::UserAuthTokenVerificationError => StatusCode::UNAUTHORIZED,
             ErrorResponseCode::UserNotVerified => StatusCode::UNAUTHORIZED,
             ErrorResponseCode::UserNotFound => StatusCode::NOT_FOUND,
+            ErrorResponseCode::UserAlreadyExists => StatusCode::CONFLICT,
             ErrorResponseCode::InvalidDateTimeFormat => StatusCode::BAD_REQUEST,
             ErrorResponseCode::InvalidUuidFormat => StatusCode::BAD_REQUEST,
             ErrorResponseCode::InvalidColorFormat => StatusCode::BAD_REQUEST,
@@ -92,6 +95,7 @@ impl From<&ErrorCode> for ErrorResponseCode {
             ErrorCode::UserAuthTokenVerificationError(_) => Self::UserAuthTokenVerificationError,
             ErrorCode::UserNotVerified => Self::UserNotVerified,
             ErrorCode::UserNotFound(_) => Self::UserNotFound,
+            ErrorCode::UserAlreadyExistsForEmail(_) => Self::UserAlreadyExists,
             ErrorCode::InvalidDateTimeFormat(_) => Self::InvalidDateTimeFormat,
             ErrorCode::InvalidUuidFormat(_) => Self::InvalidUuidFormat,
             ErrorCode::InvalidColorFormat(_) => Self::InvalidColorFormat,

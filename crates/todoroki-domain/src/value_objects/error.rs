@@ -4,7 +4,12 @@ use std::fmt::Display;
 use thiserror::Error;
 
 use crate::{
-    entities::{doit::DoitId, label::LabelId, todo::TodoId, user::UserId},
+    entities::{
+        doit::DoitId,
+        label::LabelId,
+        todo::TodoId,
+        user::{UserEmail, UserId},
+    },
     repositories::{
         doit::DoitRepositoryError, label::LabelRepositoryError, todo::TodoRepositoryError,
         user::UserRepositoryError,
@@ -29,6 +34,7 @@ pub enum ErrorCode {
     UserAuthTokenVerificationError(String),
     UserNotVerified,
     UserNotFound(UserId),
+    UserAlreadyExistsForEmail(UserEmail),
     InvalidDateTimeFormat(String),
     InvalidUuidFormat(String),
     InvalidColorFormat(String),
@@ -61,6 +67,9 @@ impl Display for ErrorCode {
             }
             Self::UserNotFound(id) => {
                 write!(f, "user/not-found; id={}", id.clone().value())
+            }
+            Self::UserAlreadyExistsForEmail(email) => {
+                write!(f, "user/already-exists; email={}", email.clone().value())
             }
             Self::InvalidDateTimeFormat(s) => write!(f, "datetime/invalid-format; error={s}"),
             Self::InvalidUuidFormat(s) => write!(f, "uuid/invalid-format; string={s}"),

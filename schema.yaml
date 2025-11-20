@@ -521,6 +521,7 @@ components:
       - user-auth/token-verification-error
       - user-auth/not-verified
       - user/not-found
+      - user/already-exists
       - datetime/invalid-format
       - uuid/invalid-format
       - color/invalid-format
@@ -738,6 +739,7 @@ components:
       required:
       - id
       - name
+      - role
       - created_at
       - updated_at
       properties:
@@ -747,8 +749,15 @@ components:
           type: string
         name:
           type: string
+        role:
+          $ref: '#/components/schemas/UserRoleResponse'
         updated_at:
           type: string
+    UserRoleResponse:
+      type: string
+      enum:
+      - owner
+      - contributor
 tags:
 - name: health
   description: APIの死活チェック

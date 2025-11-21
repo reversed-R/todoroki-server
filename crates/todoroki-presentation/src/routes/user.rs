@@ -22,7 +22,7 @@ use todoroki_infrastructure::shared::DefaultRepositories;
     operation_id = "getUserOwn",
     tag = "user",
     responses(
-        (status = 200, description = "OK", body = Vec<responses::user::UserResponse>),
+        (status = 200, description = "OK", body = responses::user::UserResponse),
         (status = 400, description = "Bad Request", body = ErrorResponse),
         (status = 422, description = "Unprocessable Entity", body = ErrorResponse),
         (status = 500, description = "Internal Server Error", body = ErrorResponse),

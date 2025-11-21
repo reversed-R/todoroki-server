@@ -3,6 +3,8 @@ FROM rust:1.87-bullseye AS builder
 
 WORKDIR /app
 
+COPY . .
+
 RUN cargo build --bin todoroki-presentation --release
 
 # runner

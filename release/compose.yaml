@@ -1,0 +1,43 @@
+services:
+  app:
+    image: ghcr.io/reversed-r/todoroki-server:latest
+    ports:
+      - 8080:8080
+    restart: always
+    networks:
+      - app-network
+      - traefik
+    depends_on:
+      postgres:
+        condition: service_healthy
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "traefik"
+      traefik.http.services.app.loadbalancer.server.scheme: http
+      traefik.http.routers.app.rule: Host(`todo.reversed-r.dev`)
+      traefik.http.routers.app.entrypoints: websecure,web
+      traefik.http.routers.app.tls.certResolver: leresolver
+      traefik.http.routers.app.service: app
+
+  postgres:
+    image: postgres:17-bullseye
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    networks:
+      - app-network
+    healthcheck:
+      test: pg_isready -U "${POSTGRES_USER}" || exit 1
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+networks:
+  app-network:
+  traefik:
+    name: traefik
+    external: true
+
+volumes:
+  postgres-data:

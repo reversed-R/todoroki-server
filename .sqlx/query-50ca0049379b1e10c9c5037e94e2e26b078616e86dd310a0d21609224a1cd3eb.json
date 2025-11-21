@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE todos\n            SET\n                name = COALESCE($2, name),\n                description = COALESCE($3, description),\n                is_public = COALESCE($4, is_public),\n                alternative_name = COALESCE($5, alternative_name),\n                started_at = COALESCE(started_at, $6),\n                ended_at = COALESCE(ended_at, $7),\n                scheduled_at = COALESCE($8, scheduled_at)\n            WHERE id = $1\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Bool",
+        "Text",
+        "Timestamptz",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "50ca0049379b1e10c9c5037e94e2e26b078616e86dd310a0d21609224a1cd3eb"
+}

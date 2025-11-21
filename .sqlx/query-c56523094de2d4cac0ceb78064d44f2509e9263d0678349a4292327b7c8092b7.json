@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO todo_schedules (todo_id, interval, starts_at, ends_at) VALUES ($1, $2, $3, $4)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        {
+          "Custom": {
+            "name": "todo_schedule_interval",
+            "kind": {
+              "Enum": [
+                "once",
+                "daily",
+                "weekly",
+                "monthly"
+              ]
+            }
+          }
+        },
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c56523094de2d4cac0ceb78064d44f2509e9263d0678349a4292327b7c8092b7"
+}

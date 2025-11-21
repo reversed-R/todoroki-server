@@ -1,0 +1,20 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE doits\n            SET\n                name = COALESCE($2, name),\n                description = COALESCE($3, description),\n                is_public = COALESCE($4, is_public),\n                alternative_name = COALESCE($5, alternative_name),\n                affects_to = COALESCE($6, affects_to),\n                deadlined_at = COALESCE($7, deadlined_at)\n            WHERE id = $1\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Bool",
+        "Text",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "da3adabd32c3d5bcba7b643daf5375d50e4bf9ddd2574ae3ed905fe32405c1a5"
+}

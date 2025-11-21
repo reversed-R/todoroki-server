@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n           INSERT INTO labels (id, name, description, color)\n           VALUES ($1, $2, $3, $4)\n           RETURNING id\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "81d0f65c40a6554d65fcc9a9b3f7d9b4c945a378772ad2bf29bac4c2579f0e61"
+}

@@ -1,0 +1,92 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n            todos.id AS \"id\",\n            todos.name AS \"name\",\n            todos.description AS \"description\",\n            todos.is_public AS \"is_public\",\n            todos.alternative_name AS \"alternative_name\",\n            todos.started_at AS \"started_at?\",\n            todos.scheduled_at AS \"scheduled_at?\",\n            todos.ended_at AS \"ended_at?\",\n            todos.created_at AS \"created_at\",\n            todos.updated_at AS \"updated_at\",\n            todos.deleted_at AS \"deleted_at?\",\n            COALESCE(\n                json_agg(\n                    json_build_object(\n                        'id', l.id,\n                        'name', l.name,\n                        'description', l.description,\n                        'color', l.color,\n                        'created_at', l.created_at,\n                        'updated_at', l.updated_at,\n                        'deleted_at', l.deleted_at\n                    )\n                ) FILTER (WHERE l.id IS NOT NULL),\n                '[]'\n            ) AS \"labels\",\n            COALESCE(\n                json_agg(\n                    json_build_object(\n                        'todo_id', ts.todo_id,\n                        'interval', ts.interval,\n                        'starts_at', ts.starts_at,\n                        'ends_at', ts.ends_at\n                    )\n                ) FILTER (WHERE ts.todo_id IS NOT NULL),\n                '[]'\n            ) AS \"schedules\"\n            FROM todos\n            LEFT JOIN todo_labels tl ON todos.id = tl.todo_id\n            LEFT JOIN labels l ON tl.label_id = l.id\n            LEFT JOIN todo_schedules ts ON todos.id = ts.todo_id\n            GROUP BY todos.id\n            ORDER BY todos.updated_at DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "is_public",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 4,
+        "name": "alternative_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "started_at?",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "scheduled_at?",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "ended_at?",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 10,
+        "name": "deleted_at?",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 11,
+        "name": "labels",
+        "type_info": "Json"
+      },
+      {
+        "ordinal": 12,
+        "name": "schedules",
+        "type_info": "Json"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      true,
+      null,
+      null
+    ]
+  },
+  "hash": "6463bfb724807559591391bbfbd64a2c17545c9ef191221980fce9709724e422"
+}

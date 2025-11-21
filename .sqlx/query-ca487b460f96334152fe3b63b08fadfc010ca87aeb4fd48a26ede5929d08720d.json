@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT\n            users.id AS \"id\",\n            users.role AS \"role\",\n            users.name AS \"name\",\n            users.email AS \"email\",\n            users.created_at AS \"created_at\",\n            users.updated_at AS \"updated_at\",\n            users.deleted_at AS \"deleted_at?\"\n            FROM users WHERE id = $1",
+  "query": "SELECT\n            users.id AS \"id\",\n            users.role AS \"role: UserRoleColumn\",\n            users.name AS \"name\",\n            users.email AS \"email\",\n            users.created_at AS \"created_at\",\n            users.updated_at AS \"updated_at\",\n            users.deleted_at AS \"deleted_at?\"\n            FROM users WHERE email = $1",
   "describe": {
     "columns": [
       {
@@ -10,7 +10,7 @@
       },
       {
         "ordinal": 1,
-        "name": "role",
+        "name": "role: UserRoleColumn",
         "type_info": {
           "Custom": {
             "name": "user_role",
@@ -51,7 +51,7 @@
     ],
     "parameters": {
       "Left": [
-        "Uuid"
+        "Text"
       ]
     },
     "nullable": [
@@ -64,5 +64,5 @@
       true
     ]
   },
-  "hash": "f6192ad4d064637c9480913ce3680e07bf89d1f185d980142682d3d915e4a1d3"
+  "hash": "ca487b460f96334152fe3b63b08fadfc010ca87aeb4fd48a26ede5929d08720d"
 }

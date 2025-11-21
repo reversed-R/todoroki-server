@@ -1,0 +1,88 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n            doits.id AS \"id\",\n            doits.name AS \"name\",\n            doits.description AS \"description\",\n            doits.is_public AS \"is_public\",\n            doits.alternative_name AS \"alternative_name\",\n            doits.affects_to AS \"affects_to?\",\n            doits.deadlined_at AS \"deadlined_at?\",\n            doits.created_at AS \"created_at\",\n            doits.updated_at AS \"updated_at\",\n            doits.deleted_at AS \"deleted_at?\",\n            doits.created_by AS \"created_by\",\n            COALESCE(\n                json_agg(\n                    json_build_object(\n                        'id', l.id,\n                        'name', l.name,\n                        'description', l.description,\n                        'color', l.color,\n                        'created_at', l.created_at,\n                        'updated_at', l.updated_at,\n                        'deleted_at', l.deleted_at\n                    )\n                ) FILTER (WHERE l.id IS NOT NULL),\n                '[]'\n            ) AS \"labels\"\n            FROM doits\n            LEFT JOIN doit_labels tl ON doits.id = tl.doit_id\n            LEFT JOIN labels l ON tl.label_id = l.id\n            WHERE doits.id = $1\n            GROUP BY doits.id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "is_public",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 4,
+        "name": "alternative_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "affects_to?",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 6,
+        "name": "deadlined_at?",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "deleted_at?",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 10,
+        "name": "created_by",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 11,
+        "name": "labels",
+        "type_info": "Json"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      false,
+      false,
+      true,
+      false,
+      null
+    ]
+  },
+  "hash": "388ffd6a6c144412830c8fe065f87b09757695c829489158fc6b743634e20314"
+}

@@ -8,12 +8,10 @@ COPY . .
 RUN cargo build --bin todoroki-presentation --release
 
 # runner
-FROM rust:1.87-bullseye
+FROM debian:bullseye-slim
 
 WORKDIR /app
 
-RUN cargo install --locked sqlx-cli --no-default-features --features postgres
-
 COPY --from=builder /app/target/release/todoroki-presentation ./server
 
-CMD cargo sqlx migrate run && ./server
+CMD ["./server"]

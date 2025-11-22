@@ -43,8 +43,8 @@ services:
 
   migration:
     build:
-      dockerfile: release/migration.Dockerfile
-      context: ..
+      dockerfile: migration.Dockerfile
+      context: .
     networks:
       - app-network
     depends_on:

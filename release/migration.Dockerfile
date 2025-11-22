@@ -2,7 +2,7 @@ FROM rust:1.87-bullseye
 
 WORKDIR /app
 
-COPY ./migration /migration
+COPY ./migrations /migrations
 
 RUN cargo install --locked sqlx-cli --no-default-features --features postgres
 

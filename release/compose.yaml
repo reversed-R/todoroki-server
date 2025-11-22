@@ -18,6 +18,11 @@ services:
       traefik.http.routers.app.tls.certResolver: leresolver
       traefik.http.routers.app.service: app
     environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_HOSTNAME=${POSTGRES_HOSTNAME}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PORT=${POSTGRES_PORT}
       - DATABASE_URL=${DATABASE_URL}
       - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
       - APP_DEFAULT_OWNER_EMAIL=${APP_DEFAULT_OWNER_EMAIL}

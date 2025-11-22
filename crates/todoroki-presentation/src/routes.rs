@@ -8,8 +8,9 @@ use crate::{middlewares, modules::Modules};
 use todoroki_infrastructure::shared::DefaultRepositories;
 
 use axum::{http::{header, Method}, routing::{get, patch, post}, Router};
+use tracing::Level;
 use std::sync::Arc;
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::{cors::{Any, CorsLayer}, trace::{DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse, TraceLayer}};
 use utoipa::OpenApi;
 
 pub fn router(modules: Arc<Modules<DefaultRepositories>>) -> Router {
@@ -94,6 +95,12 @@ pub fn router(modules: Arc<Modules<DefaultRepositories>>) -> Router {
         .merge(label_routes)
         .merge(user_routes)
         .with_state(modules)
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
+                .on_request(DefaultOnRequest::new().level(Level::INFO))
+                .on_response(DefaultOnResponse::new().level(Level::INFO)),
+        )
         .layer(
             CorsLayer::new()
                 .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE])

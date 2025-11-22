@@ -13,7 +13,9 @@ pub struct Config {
 
 impl Config {
     pub fn load() -> Result<Self, Box<dyn Error>> {
-        dotenvy::dotenv()?;
+        if let Err(e) = dotenvy::dotenv_override() {
+            tracing::info!(".env file doesn't exist. skipped: {e}");
+        }
 
         let postgres_user = env::var("POSTGRES_USER")?;
         let postgres_password = env::var("POSTGRES_PASSWORD")?;

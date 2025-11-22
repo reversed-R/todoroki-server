@@ -16,3 +16,4 @@ serde.workspace = true
 utoipa.workspace = true
 jsonwebtoken.workspace = true
 tower-http.workspace = true
+tracing.workspace = true

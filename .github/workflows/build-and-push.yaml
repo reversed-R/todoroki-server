@@ -47,6 +47,9 @@ jobs:
       - name: Update timestamp message
         run: sed -i '1 s/#timestamp/#timestamp:${{ steps.tag.outputs.time }}/g' release/compose.yaml
 
+      - name: Copy migration files to release directory
+        run: cp -r migrations release/migrations
+
       - name: Push release/compose.yaml to release branch
         uses: s0/git-publish-subdir-action@develop
         env:

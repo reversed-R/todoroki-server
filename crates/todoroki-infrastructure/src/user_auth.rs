@@ -26,15 +26,25 @@ impl UserAuthRepository for FirebaseUserAuthRepository {
                 UserAuthRepositoryError::InternalError("Failed to create http client".to_string())
             })?;
 
+        tracing::info!("fetching jwks...; jwk_url={}", self.jwk_url);
+
         let jwks: JwkSet = client
             .get(&self.jwk_url)
             .send()
             .await
-            .map_err(|_| UserAuthRepositoryError::InternalError("Failed to get JWKS".to_string()))?
+            .map_err(|e| {
+                UserAuthRepositoryError::InternalError(format!(
+                    "Failed to get JWKS; error={}",
+                    e.to_string()
+                ))
+            })?
             .json()
             .await
-            .map_err(|_| {
-                UserAuthRepositoryError::InternalError("Failed to deserialize JWKS".to_string())
+            .map_err(|e| {
+                UserAuthRepositoryError::InternalError(format!(
+                    "Failed to deserialize JWKS; error={}",
+                    e.to_string()
+                ))
             })?;
 
         let jwk = jwks

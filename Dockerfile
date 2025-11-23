@@ -12,6 +12,8 @@ FROM debian:bullseye-slim
 
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
+
 COPY --from=builder /app/target/release/todoroki-presentation ./server
 
 EXPOSE 8080

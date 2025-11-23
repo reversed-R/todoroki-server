@@ -14,4 +14,6 @@ WORKDIR /app
 
 COPY --from=builder /app/target/release/todoroki-presentation ./server
 
+EXPOSE 8080
+
 CMD ["./server"]

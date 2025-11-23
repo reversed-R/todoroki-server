@@ -11,12 +11,11 @@ services:
     labels:
       traefik.enable: "true"
       traefik.docker.network: "traefik"
-      traefik.http.services.app.loadbalancer.server.scheme: http
-      traefik.http.services.app.loadbalancer.server.port: 8080
-      traefik.http.routers.app.rule: Host(`todo-api.reversed-r.dev`)
-      traefik.http.routers.app.entrypoints: websecure,web
-      traefik.http.routers.app.tls.certResolver: leresolver
-      traefik.http.routers.app.service: app
+      traefik.http.services.todoroki-server.loadbalancer.server.scheme: http
+      traefik.http.services.todoroki-server.loadbalancer.server.port: 8080
+      traefik.http.routers.todoroki-server.rule: Host(`todo-api.reversed-r.dev`)
+      traefik.http.routers.todoroki-server.entrypoints: websecure,web
+      traefik.http.routers.todoroki-server.tls.certResolver: leresolver
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
